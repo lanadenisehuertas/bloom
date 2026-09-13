@@ -15,4 +15,12 @@ describe('generateGroceryList', () => {
     const list = generateGroceryList(selected)
     expect(list.protein.filter((i) => i.name === 'Eggs')).toHaveLength(1)
   })
+
+  it('combines quantities instead of dropping them when the same ingredient appears with a different qty across recipes', () => {
+    const selected = [RECIPES[0], RECIPES[5]] // boiled-eggs-rice-tomato (Tomato, 1 pc) + grilled-bangus-ensalada (Tomato, 2 pcs)
+    const list = generateGroceryList(selected)
+    const tomatoLines = list.produce.filter((i) => i.name === 'Tomato')
+    expect(tomatoLines).toHaveLength(1)
+    expect(tomatoLines[0].qty).toBe('1 pc, 2 pcs')
+  })
 })

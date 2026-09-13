@@ -24,6 +24,11 @@ brainstorming that refine or resolve ambiguity in that source.
    continuous implementation, in the source doc's stated order.
 3. **Pose detection:** Skip entirely. Ship only the illustrated exercise-cue library
    (steps + common-mistakes list per exercise). Do not attempt TensorFlow.js/MediaPipe.
+   In its place, each exercise gets a "Watch form videos" action that opens a YouTube
+   search (and a TikTok search) pre-filled with `"<exercise name> proper form woman
+   workout"`. This is a generated search URL, not a hand-picked specific video —
+   specific video URLs can't be verified to stay live/correct, so a search link is the
+   only reliable option that won't rot into a dead or wrong link over time.
 4. **Stack:** React + Vite + Tailwind CSS, Dexie.js over IndexedDB, Chart.js, lucide-react,
    react-router, vite-plugin-pwa, vitest.
 5. **iPhone target:** This is a mobile-first PWA meant to be installed to an iPhone
@@ -84,6 +89,7 @@ src/
     workoutProgram.ts  A/B/C/D + recovery day data access, progressive-overload rules
     adaptiveRecalc.ts  Section 7 rules (plateau detection, downshift triggers)
     motivation.ts      streak/grace-day, milestone unlock conditions
+    formVideos.ts      builds YouTube/TikTok search URLs per exercise name
   data/            seeded static content — exercises.ts, recipes.ts, workoutProgram.ts
   features/        one folder per screen (see Information Architecture below)
   components/      shared UI primitives: Card, Button, ProgressRing, Modal, Tabs,

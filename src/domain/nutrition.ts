@@ -60,7 +60,9 @@ export function evaluateGoalPace(input: GoalPaceInput): GoalPaceResult {
   const totalLossNeededKg = startWeightKg - goalWeightKg
   const requiredWeeklyLossKg = totalLossNeededKg / weeksAvailable
   const safeWeeklyCapKg = calcSafeWeeklyPaceCapKg(startWeightKg)
-  const isSafe = requiredWeeklyLossKg <= safeWeeklyCapKg
+  // Epsilon guard: a pace landing exactly on the cap shouldn't flip unsafe due to
+  // floating-point noise (e.g. 5.6/7 evaluates to 0.7999999999999999, not 0.8).
+  const isSafe = requiredWeeklyLossKg <= safeWeeklyCapKg + 1e-9
 
   const checkpointWeightKg = Math.max(
     goalWeightKg,

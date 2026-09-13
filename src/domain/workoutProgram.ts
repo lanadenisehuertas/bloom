@@ -9,6 +9,8 @@ export interface CycleModifierResult {
   lowerBarMessage: string | null
 }
 
+// _day: reserved for a future per-day-specific modifier (the Dashboard/Workout
+// Player tasks already call this with the scheduled day); unused for now.
 export function applyCyclePhaseModifier(_day: WorkoutDay, phase: CyclePhase): CycleModifierResult {
   switch (phase) {
     case 'menstrual':
@@ -50,7 +52,11 @@ export interface SessionResult {
   hitTopOfRange: boolean
 }
 
-/** Suggests a small increase once the last 2 logged sessions both hit the top of the rep range. */
+/**
+ * Suggests a small increase once the last 2 logged sessions both hit the top of the
+ * rep range. Assumes `history` is ordered oldest-to-newest — pass a chronological log,
+ * not a "most recent first" query result.
+ */
 export function suggestProgressiveOverload(history: SessionResult[]): boolean {
   if (history.length < 2) return false
   const lastTwo = history.slice(-2)

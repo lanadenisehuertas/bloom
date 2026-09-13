@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import 'fake-indexeddb/auto'
 import { db } from '../../db'
 import { WorkoutPlayer } from './WorkoutPlayer'
@@ -9,6 +9,12 @@ describe('WorkoutPlayer', () => {
   beforeEach(async () => {
     await db.delete()
     await db.open()
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-09-14T09:00:00')) // a Monday -> workout day 'A'
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('lists exercises for the scheduled day and logs a full completion', async () => {

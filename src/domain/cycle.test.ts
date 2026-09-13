@@ -11,6 +11,13 @@ describe('detectPhase', () => {
     expect(detectPhase(15, 28)).toBe('luteal')
     expect(detectPhase(28, 28)).toBe('luteal')
   })
+
+  it('scales phase boundaries with a non-default cycle length', () => {
+    // 35-day cycle: ovulation ≈ day 21 (35-14), not the fixed day-14 default
+    expect(detectPhase(20, 35)).toBe('follicular')
+    expect(detectPhase(21, 35)).toBe('ovulation')
+    expect(detectPhase(22, 35)).toBe('luteal')
+  })
 })
 
 describe('currentCycleDay', () => {

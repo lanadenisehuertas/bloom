@@ -86,5 +86,8 @@ export const WEEKLY_SCHEDULE: Record<number, string> = {
 }
 
 export function getScheduledDay(dayOfWeek: number): WorkoutDay {
-  return WORKOUT_DAYS[WEEKLY_SCHEDULE[dayOfWeek]]
+  const dayKey = WEEKLY_SCHEDULE[dayOfWeek]
+  const day = WORKOUT_DAYS[dayKey]
+  if (!day) throw new Error(`No scheduled day for dayOfWeek: ${dayOfWeek}`)
+  return day
 }

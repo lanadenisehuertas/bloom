@@ -22,4 +22,23 @@ describe('Onboarding', () => {
     expect(await screen.findByText(/realistic/i)).toBeInTheDocument()
     expect(screen.getByText(/74/)).toBeInTheDocument()
   })
+
+  it('persists edited stats instead of only the hardcoded defaults', async () => {
+    render(<MemoryRouter><Onboarding /></MemoryRouter>)
+
+    const weightInput = await screen.findByLabelText(/weight/i)
+    await userEvent.clear(weightInput)
+    await userEvent.type(weightInput, '70')
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
+
+    // Now on the goal step; use a safe pace so onboarding completes in one path.
+    const goalWeightInput = screen.getByLabelText(/goal weight/i)
+    await userEvent.clear(goalWeightInput)
+    await userEvent.type(goalWeightInput, '68')
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
+
+    const profile = await db.profile.get('default')
+    expect(profile?.weightKg).toBe(70)
+    expect(profile?.goalWeightKg).toBe(68)
+  })
 })

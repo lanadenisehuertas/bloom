@@ -16,6 +16,7 @@ const DEFAULT_PROFILE_DRAFT = {
   goalDate: '2026-10-31',
   equipment: ['dumbbells-5kg', 'resistance-band', 'bodyweight'],
   injuryNotes: 'Occasional joint pain — needs mobility work built in.',
+  motivationReason: 'Building the confidence that comes with feeling strong in my own body.',
 }
 
 type Step = 'stats' | 'goal' | 'realistic-goal' | 'done'
@@ -71,6 +72,15 @@ export function Onboarding() {
           className="w-full rounded-2xl border border-cream-200 p-3"
           value={draft.age}
           onChange={(e) => setDraft({ ...draft, age: Number(e.target.value) })}
+        />
+
+        <label className="block text-sm" htmlFor="motivationReason">What are you working toward?</label>
+        <textarea
+          id="motivationReason"
+          className="w-full rounded-2xl border border-cream-200 p-3"
+          rows={2}
+          value={draft.motivationReason}
+          onChange={(e) => setDraft({ ...draft, motivationReason: e.target.value })}
         />
 
         <Button onClick={() => setStep('goal')}>Continue</Button>

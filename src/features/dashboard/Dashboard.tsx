@@ -12,7 +12,6 @@ import { applyCyclePhaseModifier } from '../../domain/workoutProgram'
 
 export function Dashboard() {
   const { profile } = useProfile()
-  void profile // referenced by a later task (motivation wiring); not yet used in this component's body
   const { log, updateToday } = useTodayLog()
   const { phase } = useCycle()
   const { settings } = useSettings()
@@ -24,7 +23,9 @@ export function Dashboard() {
     <div className="space-y-4">
       <Card className="bg-sage-50">
         <p className="text-sm text-sage-700">Why you're here</p>
-        <p className="text-lg font-medium text-ink-900">Building your hourglass shape, one session at a time.</p>
+        <p className="text-lg font-medium text-ink-900">
+          {profile?.motivationReason || 'Building your hourglass shape, one session at a time.'}
+        </p>
       </Card>
 
       <Card>

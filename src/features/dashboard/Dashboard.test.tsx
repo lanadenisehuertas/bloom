@@ -23,4 +23,14 @@ describe('Dashboard', () => {
     )
     expect(await screen.findByText(/streak/i)).toBeInTheDocument()
   })
+
+  it("shows the profile's own motivation reason instead of a generic slogan when one is set", async () => {
+    await db.profile.update('default', { motivationReason: 'Feeling strong enough to hike with my sister again.' })
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByText(/hike with my sister/i)).toBeInTheDocument()
+  })
 })

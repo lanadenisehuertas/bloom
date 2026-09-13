@@ -12,6 +12,7 @@ export interface Profile {
   checkpointDate?: string
   equipment: string[]
   injuryNotes: string
+  motivationReason?: string
   createdAt?: string
 }
 

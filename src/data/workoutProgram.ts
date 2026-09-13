@@ -50,6 +50,7 @@ export const WORKOUT_DAYS: Record<string, WorkoutDay> = {
       { exerciseId: 'glute-bridge-march', sets: 3, reps: '10/side' },
       { exerciseId: 'pallof-press', sets: 3, reps: '12/side' },
       { exerciseId: 'plank-shoulder-tap', sets: 3, reps: '20 taps' },
+      { exerciseId: 'diaphragmatic-breathing', sets: 2, reps: '10 breaths' },
     ],
     cooldown: ['Cat-cow', 'Seated spinal twist'],
   },

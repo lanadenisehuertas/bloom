@@ -19,7 +19,7 @@ describe('WorkoutPlayer', () => {
 
   it('lists exercises for the scheduled day and logs a full completion', async () => {
     render(<WorkoutPlayer />)
-    expect(await screen.findByRole('heading')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
     const logs = await db.workoutLogs.toArray()
     expect(logs).toHaveLength(1)
@@ -40,5 +40,13 @@ describe('WorkoutPlayer', () => {
     expect(links[0]).toHaveAttribute('href', expect.stringContaining('youtube.com/results'))
     expect(links[0]).toHaveAttribute('target', '_blank')
     expect(links[0]).toHaveAttribute('rel', expect.stringContaining('noopener'))
+  })
+
+  it('shows a rest-day message with no completion buttons on the scheduled rest day', async () => {
+    vi.setSystemTime(new Date('2026-09-13T09:00:00')) // a Sunday -> rest day
+    render(<WorkoutPlayer />)
+    expect(await screen.findByText(/rest day/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /complete workout/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /minimum viable day/i })).not.toBeInTheDocument()
   })
 })

@@ -18,6 +18,20 @@ export function WorkoutPlayer() {
     })
   }
 
+  if (day.id === 'rest') {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-xl font-semibold">{day.title}</h1>
+        <Card>
+          <p className="text-ink-700">
+            Today's a rest day. Take stock of the week — weigh in, jot down your measurements, and
+            notice how you're feeling. No workout to log today.
+          </p>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3 pb-24">
       <h1 className="text-xl font-semibold">{day.title}</h1>
@@ -28,7 +42,7 @@ export function WorkoutPlayer() {
         const videoLinks = buildFormVideoLinks(exercise.name)
         return (
           <Card key={exercise.id}>
-            <p className="font-medium">{exercise.name}</p>
+            <h3 className="font-medium">{exercise.name}</h3>
             <p className="text-sm text-ink-500">{programExercise.sets} sets × {programExercise.reps}</p>
             <details className="mt-2 text-sm">
               <summary className="cursor-pointer text-sage-700">Form cues</summary>
@@ -54,7 +68,7 @@ export function WorkoutPlayer() {
 
       {day.cooldown.length > 0 && (
         <Card>
-          <p className="font-medium">Cooldown</p>
+          <h3 className="font-medium">Cooldown</h3>
           <ul className="list-disc pl-5 text-sm">{day.cooldown.map((c) => <li key={c}>{c}</li>)}</ul>
         </Card>
       )}

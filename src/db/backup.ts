@@ -28,8 +28,36 @@ export async function exportData(): Promise<BackupBundle> {
   return { version: 1, exportedAt: new Date().toISOString(), profile, dailyLogs, cycleLog, workoutLogs, measurementLogs, milestones, settings }
 }
 
+/**
+ * Restores a backup with REPLACE semantics: each table is cleared before the backup's
+ * rows are written back, so restoring never merges with (or can be corrupted by id
+ * collisions against) data created locally since the backup was taken.
+ */
 export async function importData(bundle: BackupBundle): Promise<void> {
+  if (bundle.version !== 1) {
+    throw new Error(`Unsupported backup version: ${bundle.version}. This app can only import version 1 backups.`)
+  }
+  const requiredArrayFields: (keyof BackupBundle)[] = [
+    'profile', 'dailyLogs', 'cycleLog', 'workoutLogs', 'measurementLogs', 'milestones', 'settings',
+  ]
+  for (const field of requiredArrayFields) {
+    if (!Array.isArray(bundle[field])) {
+      throw new Error(`Invalid backup file: expected "${field}" to be an array.`)
+    }
+  }
+
   await db.transaction('rw', [db.profile, db.dailyLogs, db.cycleLog, db.workoutLogs, db.measurementLogs, db.milestones, db.settings], async () => {
+    // Replace semantics: clear each table before restoring, so a backup with
+    // auto-increment ids (workoutLogs) can never collide with rows created
+    // locally since the backup was taken.
+    await db.profile.clear()
+    await db.dailyLogs.clear()
+    await db.cycleLog.clear()
+    await db.workoutLogs.clear()
+    await db.measurementLogs.clear()
+    await db.milestones.clear()
+    await db.settings.clear()
+
     if (bundle.profile.length) await db.profile.bulkPut(bundle.profile)
     if (bundle.dailyLogs.length) await db.dailyLogs.bulkPut(bundle.dailyLogs)
     if (bundle.cycleLog.length) await db.cycleLog.bulkPut(bundle.cycleLog)

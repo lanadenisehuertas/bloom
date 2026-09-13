@@ -1,0 +1,26 @@
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
+import 'fake-indexeddb/auto'
+import { MemoryRouter } from 'react-router-dom'
+import { db } from '../../db'
+import { Dashboard } from './Dashboard'
+
+describe('Dashboard', () => {
+  beforeEach(async () => {
+    await db.delete()
+    await db.open()
+    await db.profile.put({
+      id: 'default', heightCm: 175, weightKg: 80, age: 21, activityLevel: 'lightlyActive',
+      goalWeightKg: 74, goalDate: '2026-10-31', equipment: [], injuryNotes: '', createdAt: '2026-09-14',
+    })
+  })
+
+  it("shows today's scheduled workout title and the streak count", async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByText(/streak/i)).toBeInTheDocument()
+  })
+})

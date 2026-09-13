@@ -12,6 +12,13 @@ describe('ExerciseLibrary', () => {
     expect(screen.queryByText('Goblet Squat')).not.toBeInTheDocument()
   })
 
+  it('matches a human-readable muscle group label, not just the raw internal key', async () => {
+    render(<ExerciseLibrary />)
+    await userEvent.type(screen.getByPlaceholderText(/search/i), 'upper body')
+    expect(screen.getByText('Push-Up Progression')).toBeInTheDocument()
+    expect(screen.queryByText('Goblet Squat')).not.toBeInTheDocument()
+  })
+
   it('gives every listed exercise a form-video search link', () => {
     render(<ExerciseLibrary />)
     const links = screen.getAllByRole('link', { name: /watch form videos/i })

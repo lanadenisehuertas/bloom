@@ -34,7 +34,7 @@ export function NutritionScreen() {
 
   return (
     <div className="space-y-3 pb-24">
-      <Card className="bg-clay-50">
+      <Card className="bg-clay-50" data-testid="daily-target">
         <p className="text-sm text-clay-700">Today's target</p>
         <p className="text-lg font-semibold">{targets.calorieTarget} kcal · {targets.proteinTarget}g protein</p>
       </Card>
@@ -46,7 +46,7 @@ export function NutritionScreen() {
           className={`cursor-pointer ${selectedIds.includes(recipe.id) ? 'ring-2 ring-sage-500' : ''}`}
         >
           <h3 className="font-medium">{recipe.name}</h3>
-          <p className="text-xs text-ink-500">{recipe.kcal} cal · {recipe.proteinG}g protein</p>
+          <p className="text-xs text-ink-500">{recipe.kcal} kcal · {recipe.proteinG}g protein</p>
         </Card>
       ))}
 

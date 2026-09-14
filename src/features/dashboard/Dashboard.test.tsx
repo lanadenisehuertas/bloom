@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, it, expect, beforeEach } from 'vitest'
 import 'fake-indexeddb/auto'
 import { MemoryRouter } from 'react-router-dom'
@@ -32,5 +33,24 @@ describe('Dashboard', () => {
       </MemoryRouter>
     )
     expect(await screen.findByText(/hike with my sister/i)).toBeInTheDocument()
+  })
+
+  it('links to the exercise library', async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByRole('link', { name: /exercise library/i })).toHaveAttribute('href', '/exercises')
+  })
+
+  it('opens the weekly check-in modal', async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    await userEvent.click(await screen.findByRole('button', { name: /weekly check-in/i }))
+    expect(await screen.findByText(/weekly reflection/i)).toBeInTheDocument()
   })
 })

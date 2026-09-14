@@ -41,6 +41,8 @@ export interface WorkoutLogExercise {
   sets: number
   reps: number
   weightKg?: number
+  /** Only set for rep-range exercises (e.g. "12-15") where the user toggled it during logging. */
+  hitTopOfRange?: boolean
 }
 
 export interface WorkoutLog {

@@ -93,4 +93,105 @@ describe('WorkoutPlayer', () => {
     expect(screen.getByRole('button', { name: /complete workout/i })).toBeEnabled()
     expect(screen.getByRole('button', { name: /minimum viable day/i })).toBeEnabled()
   })
+
+  describe('progressive overload suggestion', () => {
+    // Day A's goblet-squat is the only rep-range ("12-15") exercise.
+    it('suggests a small increase after 2 prior sessions plus today all hit the top of the range', async () => {
+      await db.workoutLogs.bulkAdd([
+        {
+          date: '2026-09-01',
+          workoutDayId: 'A',
+          completed: 'full',
+          exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+        },
+        {
+          date: '2026-09-08',
+          workoutDayId: 'A',
+          completed: 'full',
+          exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+        },
+      ])
+
+      render(<WorkoutPlayer />)
+      const toggle = await screen.findByLabelText(/hit the top of the range today\?/i)
+      await userEvent.click(toggle)
+      await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
+
+      expect(
+        await screen.findByText(/try adding a rep or a bit more resistance on: goblet squat/i)
+      ).toBeInTheDocument()
+
+      const logs = await db.workoutLogs.orderBy('date').toArray()
+      const todayLog = logs[logs.length - 1]
+      const gobletEntry = todayLog.exercises.find((e) => e.name === 'Goblet Squat')
+      expect(gobletEntry?.hitTopOfRange).toBe(true)
+    })
+
+    it('shows no suggestion when the toggle is left off', async () => {
+      await db.workoutLogs.bulkAdd([
+        {
+          date: '2026-09-01',
+          workoutDayId: 'A',
+          completed: 'full',
+          exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+        },
+        {
+          date: '2026-09-08',
+          workoutDayId: 'A',
+          completed: 'full',
+          exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+        },
+      ])
+
+      render(<WorkoutPlayer />)
+      await screen.findByLabelText(/hit the top of the range today\?/i)
+      await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
+
+      expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
+    })
+
+    it('shows no suggestion when there are fewer than 2 qualifying prior sessions', async () => {
+      await db.workoutLogs.add({
+        date: '2026-09-08',
+        workoutDayId: 'A',
+        completed: 'full',
+        exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+      })
+
+      render(<WorkoutPlayer />)
+      const toggle = await screen.findByLabelText(/hit the top of the range today\?/i)
+      await userEvent.click(toggle)
+      await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
+
+      expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
+    })
+
+    it('does not count a Minimum Viable Day toggle toward progressive-overload history', async () => {
+      await db.workoutLogs.bulkAdd([
+        {
+          date: '2026-09-01',
+          workoutDayId: 'A',
+          completed: 'full',
+          exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+        },
+        {
+          date: '2026-09-08',
+          workoutDayId: 'A',
+          completed: 'full',
+          exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
+        },
+      ])
+
+      render(<WorkoutPlayer />)
+      const toggle = await screen.findByLabelText(/hit the top of the range today\?/i)
+      await userEvent.click(toggle)
+      await userEvent.click(screen.getByRole('button', { name: /minimum viable day/i }))
+
+      expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
+      const logs = await db.workoutLogs.orderBy('date').toArray()
+      const todayLog = logs[logs.length - 1]
+      const gobletEntry = todayLog.exercises.find((e) => e.name === 'Goblet Squat')
+      expect(gobletEntry?.hitTopOfRange).toBeUndefined()
+    })
+  })
 })

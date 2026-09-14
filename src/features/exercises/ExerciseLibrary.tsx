@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
-import { ArrowUpRight, Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, ArrowUpRight, Search } from 'lucide-react'
 import { Card } from '../../components/Card'
 import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_TONES } from '../../data/muscleGroups'
 import { Pill } from '../../components/Pill'
@@ -21,6 +22,16 @@ export function ExerciseLibrary() {
   return (
     <div className="space-y-4">
       <header className="px-1">
+        {/* This screen is a drill-down from the Dashboard, not a bottom-nav tab —
+            it needs its own explicit way back rather than relying on the user to
+            find the right nav icon. */}
+        <Link
+          to="/"
+          className="-ml-2 mb-2 inline-flex min-h-[44px] items-center gap-1 rounded-full px-2 text-label font-bold text-ink-500 transition-colors duration-200 active:text-ink-900"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          Today
+        </Link>
         <p className="numerals text-label font-medium text-ink-500">{EXERCISES.length} exercises</p>
         <h1 className="font-display text-3xl font-extrabold leading-tight">Exercises</h1>
       </header>

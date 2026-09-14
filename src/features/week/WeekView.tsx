@@ -5,6 +5,7 @@ import { Pill } from '../../components/Pill'
 import { TONE_MUTED } from '../../components/tones'
 import {
   Anchor,
+  ArrowLeft,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -102,6 +103,16 @@ export function WeekView() {
   return (
     <div className="space-y-4">
       <header className="px-1">
+        {/* This screen is a drill-down from the Dashboard, not a bottom-nav tab —
+            it needs its own explicit way back rather than relying on the user to
+            find the right nav icon. */}
+        <Link
+          to="/"
+          className="-ml-2 mb-2 inline-flex min-h-[44px] items-center gap-1 rounded-full px-2 text-label font-bold text-ink-500 transition-colors duration-200 active:text-ink-900"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          Today
+        </Link>
         <p className="text-label font-medium text-ink-500">
           {isCurrentWeek ? 'This week' : 'Browsing another week'}
         </p>

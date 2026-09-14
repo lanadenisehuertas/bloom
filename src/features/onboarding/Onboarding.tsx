@@ -1,5 +1,6 @@
 import { useState, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
 import { Pill } from '../../components/Pill'
@@ -44,6 +45,21 @@ function Field({
       {children}
       {hint && <p className="text-label text-ink-500">{hint}</p>}
     </div>
+  )
+}
+
+/** A user correcting a typo on step 2 shouldn't have to restart the whole flow —
+ *  multi-step forms must always allow going back (design-system UX checklist). */
+function BackButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="-ml-2 inline-flex min-h-[44px] items-center gap-1 rounded-full px-2 text-label font-bold text-ink-500 transition-colors duration-200 active:text-ink-900"
+    >
+      <ArrowLeft size={16} aria-hidden="true" />
+      {label}
+    </button>
   )
 }
 
@@ -156,6 +172,7 @@ export function Onboarding() {
     return (
       <div className="mx-auto w-full max-w-md space-y-4 p-4 pt-8">
         <header className="space-y-3 px-1">
+          <BackButton label="Back" onClick={() => setStep('stats')} />
           <Pill className="bg-sun text-ink-900">Your goal</Pill>
           <h1 className="font-display text-[34px] font-extrabold leading-[1.1]">
             What are you aiming for?
@@ -215,7 +232,8 @@ export function Onboarding() {
 
   if (step === 'realistic-goal' && paceResult) {
     return (
-      <div className="mx-auto w-full max-w-md p-4 pt-8">
+      <div className="mx-auto w-full max-w-md space-y-3 p-4 pt-8">
+        <BackButton label="Adjust my goal" onClick={() => setStep('goal')} />
         <RealisticGoalScreen
           result={paceResult}
           goalDate={draft.goalDate}

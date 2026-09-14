@@ -41,4 +41,19 @@ describe('Onboarding', () => {
     expect(profile?.weightKg).toBe(70)
     expect(profile?.goalWeightKg).toBe(68)
   })
+
+  it('lets the user go back to the stats step and keeps their edit', async () => {
+    render(<MemoryRouter><Onboarding /></MemoryRouter>)
+
+    const weightInput = await screen.findByLabelText(/weight/i)
+    await userEvent.clear(weightInput)
+    await userEvent.type(weightInput, '72')
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
+
+    // Now on the goal step — go back to stats instead of continuing.
+    await userEvent.click(await screen.findByRole('button', { name: /^back$/i }))
+
+    const weightInputAgain = await screen.findByLabelText(/weight/i)
+    expect(weightInputAgain).toHaveValue(72)
+  })
 })

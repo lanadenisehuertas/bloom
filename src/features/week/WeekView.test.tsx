@@ -88,4 +88,13 @@ describe('WeekView', () => {
     )
     expect(screen.queryByText(/projected/i)).not.toBeInTheDocument()
   })
+
+  it('provides an explicit way back to Today, since this screen is not a bottom-nav tab', async () => {
+    render(
+      <MemoryRouter>
+        <WeekView />
+      </MemoryRouter>
+    )
+    expect(await screen.findByRole('link', { name: 'Today' })).toHaveAttribute('href', '/')
+  })
 })

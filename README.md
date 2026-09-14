@@ -8,7 +8,7 @@ No login. No backend. No subscriptions. No one but you ever sees your data.
 
 ## What this is
 
-Bloom is a mobile-first [Progressive Web App](https://web.dev/progressive-web-apps/) that turns a research-backed nutrition and strength program into a coach that actually adapts:
+Bloom is a mobile-first [Progressive Web App](https://bloom-liart-delta.vercel.app/) that turns a research-backed nutrition and strength program into a coach that actually adapts:
 
 - 🏋️ **A real 4-day strength program** (glutes/hips, upper body/arms/back, core, legs + cardio) built for home equipment — two dumbbells and a resistance band, nothing else
 - 🔄 **Synced to your actual cycle** — tap the days you bleed on a real calendar, and Bloom learns your real cycle length and period length from it (not a textbook 28-day guess), automatically easing workout intensity during your period and nudging progressive overload in your highest-capacity week

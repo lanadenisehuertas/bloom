@@ -11,8 +11,11 @@ export interface BackupBundle {
   measurementLogs: MeasurementLog[]
   milestones: Milestone[]
   settings: SettingsRecord[]
-  // Photos are intentionally excluded from JSON export (Blobs don't serialize to JSON safely);
-  // photo backup is handled separately as a zip in the Settings feature (Task 21).
+  // Photos are intentionally excluded from JSON export (Blobs don't serialize to JSON
+  // safely). There is currently no separate photo-backup path anywhere in the app —
+  // progress photos exist only in this browser's IndexedDB and are NOT covered by
+  // export/import. If photo backup is ever built, it needs its own export mechanism
+  // (e.g. a zip of Blobs) and this comment should point to it.
 }
 
 export async function exportData(): Promise<BackupBundle> {

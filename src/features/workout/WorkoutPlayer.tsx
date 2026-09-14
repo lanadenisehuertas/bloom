@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { ArrowUpRight, Sparkles } from 'lucide-react'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
+import { Pill } from '../../components/Pill'
 import { getScheduledDay } from '../../data/workoutProgram'
 import { getExercise } from '../../data/exercises'
 import { useWorkoutLog } from '../../hooks/useWorkoutLog'
@@ -70,10 +72,14 @@ export function WorkoutPlayer() {
 
   if (day.id === 'rest') {
     return (
-      <div className="space-y-3">
-        <h1 className="text-xl font-semibold">{day.title}</h1>
-        <Card>
-          <p className="text-ink-700">
+      <div className="space-y-4">
+        <header className="px-1">
+          <p className="text-label font-medium text-ink-500">Recovery &amp; reflection</p>
+          <h1 className="font-display text-3xl font-extrabold leading-tight">{day.title}</h1>
+        </header>
+        <Card tone="mint">
+          <Pill className="bg-ink-900/10">Take it easy</Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
             Today's a rest day. Take stock of the week — weigh in, jot down your measurements, and
             notice how you're feeling. No workout to log today.
           </p>
@@ -83,21 +89,27 @@ export function WorkoutPlayer() {
   }
 
   return (
-    <div className="space-y-3 pb-24">
-      <h1 className="text-xl font-semibold">{day.title}</h1>
-      <p className="text-sm text-ink-500">{day.durationMinutes} min</p>
+    <div className="space-y-4 pb-40">
+      <header className="px-1">
+        <p className="numerals text-label font-medium text-ink-500">{day.durationMinutes} min</p>
+        <h1 className="font-display text-3xl font-extrabold leading-tight">{day.title}</h1>
+      </header>
 
       {modifier?.suggestSwapToRecovery && (
-        <Card>
-          <p className="text-sm text-ink-700">
+        <Card tone="lilac">
+          <Pill className="bg-ink-900/10">Period</Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
             Today's your period — full permission to keep this light or swap to recovery if you need it.
           </p>
         </Card>
       )}
 
       {modifier?.testDay && (
-        <Card>
-          <p className="text-sm text-ink-700">
+        <Card tone="sun">
+          {/* Deliberately not "Peak energy" — the test matches /peak energy/i by
+              text and a second match here would make the query ambiguous. */}
+          <Pill className="bg-ink-900/10">Ovulation</Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
             Peak energy day — if you're feeling strong, today's a good day to test a max clean rep or a bit
             more resistance.
           </p>
@@ -105,8 +117,9 @@ export function WorkoutPlayer() {
       )}
 
       {modifier?.nudgeProgressiveOverload && (
-        <Card>
-          <p className="text-sm text-ink-700">
+        <Card tone="mint">
+          <Pill className="bg-ink-900/10">High capacity</Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
             This is typically your highest-capacity week — consider adding a rep or a little resistance if
             today's sets feel easy.
           </p>
@@ -117,8 +130,11 @@ export function WorkoutPlayer() {
         !modifier.suggestSwapToRecovery &&
         !modifier.testDay &&
         !modifier.nudgeProgressiveOverload && (
-          <Card>
-            <p className="text-sm text-ink-700">{modifier.lowerBarMessage}</p>
+          <Card tone="sky">
+            <Pill className="bg-ink-900/10">This week</Pill>
+            <p className="mt-2 font-body text-[15px] font-medium leading-snug">
+              {modifier.lowerBarMessage}
+            </p>
           </Card>
         )}
 
@@ -132,23 +148,30 @@ export function WorkoutPlayer() {
             ? Math.max(1, Math.round(Number.parseInt(programExercise.reps, 10) * (1 - repReductionPct / 100)))
             : programExercise.reps
         return (
-          <Card key={exercise.id}>
-            <h3 className="font-medium">{exercise.name}</h3>
-            <p className="text-sm text-ink-500">
-              {programExercise.sets} sets × {displayedReps}
+          <Card key={exercise.id} tone="white">
+            <h3 className="font-display text-lg font-bold leading-snug">{exercise.name}</h3>
+            {/* Keep this the FIRST <p> in the card — WorkoutPlayer.test.tsx reads the
+                rep count via heading.parentElement.querySelector('p'). */}
+            <p className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="numerals rounded-chip bg-cream-deep px-3 py-1 text-label font-bold">
+                {programExercise.sets} sets × {displayedReps}
+              </span>
               {repReductionPct > 0 && isPlainNumberReps && (
-                <span className="text-xs text-clay-700"> (reduced ~{repReductionPct}% for today's phase)</span>
+                <span className="text-label text-ink-500">
+                  (reduced ~{repReductionPct}% for today's phase)
+                </span>
               )}
             </p>
             {repReductionPct > 0 && !isPlainNumberReps && (
-              <p className="text-xs text-clay-700">
+              <p className="mt-2 text-label text-ink-500">
                 (today: aim for ~30% fewer reps, or whatever feels sustainable)
               </p>
             )}
             {isRepRangeExercise(programExercise.reps) && (
-              <label className="mt-2 flex items-center gap-2 text-sm text-ink-700">
+              <label className="mt-3 flex min-h-[48px] cursor-pointer items-center gap-3 rounded-chip bg-cream-deep p-3 text-[15px] font-medium">
                 <input
                   type="checkbox"
+                  className="h-5 w-5 shrink-0 accent-ink-900"
                   checked={hitTopOfRange[programExercise.exerciseId] ?? false}
                   onChange={(ev) =>
                     setHitTopOfRange((prev) => ({ ...prev, [programExercise.exerciseId]: ev.target.checked }))
@@ -157,13 +180,15 @@ export function WorkoutPlayer() {
                 Hit the top of the range today?
               </label>
             )}
-            <details className="mt-2 text-sm">
-              <summary className="cursor-pointer text-sage-700">Form cues</summary>
-              <ul className="mt-1 list-disc pl-5">
+            <details className="mt-3">
+              <summary className="inline-flex min-h-[44px] cursor-pointer items-center text-label font-bold underline underline-offset-4">
+                Form cues
+              </summary>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-label">
                 {exercise.cues.map((cue) => <li key={cue}>{cue}</li>)}
               </ul>
-              <p className="mt-2 font-medium text-clay-700">Common mistakes</p>
-              <ul className="list-disc pl-5">
+              <p className="mt-3 text-label font-bold">Common mistakes</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-label">
                 {exercise.commonMistakes.map((m) => <li key={m}>{m}</li>)}
               </ul>
             </details>
@@ -171,31 +196,40 @@ export function WorkoutPlayer() {
               href={videoLinks.youtube}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-block text-sm font-medium text-sage-700 underline"
+              className="mt-2 inline-flex min-h-[48px] items-center gap-1 text-label font-bold underline underline-offset-4"
             >
               Watch form videos
+              <ArrowUpRight size={15} aria-hidden="true" />
             </a>
           </Card>
         )
       })}
 
       {day.cooldown.length > 0 && (
-        <Card>
-          <h3 className="font-medium">Cooldown</h3>
-          <ul className="list-disc pl-5 text-sm">{day.cooldown.map((c) => <li key={c}>{c}</li>)}</ul>
+        <Card tone="cream">
+          <h3 className="font-display text-lg font-bold">Cooldown</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-label">
+            {day.cooldown.map((c) => <li key={c}>{c}</li>)}
+          </ul>
         </Card>
       )}
 
       {overloadSuggestions.length > 0 && (
-        <Card>
-          <p className="text-sm text-ink-700">
+        <Card tone="sun">
+          <Pill className="bg-ink-900/10">
+            <Sparkles size={13} aria-hidden="true" />
+            Progress
+          </Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
             Nice work — next time, try adding a rep or a bit more resistance on: {overloadSuggestions.join(', ')}.
           </p>
         </Card>
       )}
 
-      <div className="fixed inset-x-0 bottom-16 flex justify-center gap-2 px-4">
-        <Button onClick={() => complete('full')}>Complete workout</Button>
+      <div className="fixed inset-x-0 bottom-16 flex flex-wrap justify-center gap-2 bg-cream px-4 py-3">
+        <Button variant="primary" onClick={() => complete('full')}>
+          Complete workout
+        </Button>
         <Button variant="secondary" onClick={() => complete('minimal')}>
           Minimum Viable Day
         </Button>

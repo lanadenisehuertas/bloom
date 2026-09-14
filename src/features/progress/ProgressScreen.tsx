@@ -4,6 +4,8 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { db } from '../../db'
 import { Card } from '../../components/Card'
 import { PhotoCompare } from './PhotoCompare'
+import { MeasurementsLog } from './MeasurementsLog'
+import { useMilestones } from './useMilestones'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
 
@@ -19,6 +21,8 @@ export function ProgressScreen() {
   const weighIns = dailyLogs.filter((d) => d.weightKg != null)
   const averages = rollingAverage(weighIns.map((d) => d.weightKg!), 7)
   const latestAvg = averages[averages.length - 1]
+  const { milestones } = useMilestones()
+  const sortedMilestones = [...milestones].sort((a, b) => (a.unlockedDate < b.unlockedDate ? 1 : -1))
 
   return (
     <div className="space-y-3">
@@ -37,6 +41,22 @@ export function ProgressScreen() {
           />
         </Card>
       )}
+
+      {sortedMilestones.length > 0 && (
+        <Card className="space-y-2">
+          <h3 className="font-medium">Milestones</h3>
+          <div className="grid grid-cols-1 gap-2">
+            {sortedMilestones.map((m) => (
+              <div key={m.id} className="rounded bg-sage-50 p-2 text-sm">
+                <span className="font-medium">{m.label}</span>
+                <span className="ml-2 text-xs text-ink-500">{m.unlockedDate}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <MeasurementsLog />
 
       <PhotoCompare />
     </div>

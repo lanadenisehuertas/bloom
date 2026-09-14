@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import 'fake-indexeddb/auto'
@@ -21,8 +21,10 @@ describe('WorkoutPlayer', () => {
     render(<WorkoutPlayer />)
     expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
+    await waitFor(async () => {
+      expect(await db.workoutLogs.toArray()).toHaveLength(1)
+    })
     const logs = await db.workoutLogs.toArray()
-    expect(logs).toHaveLength(1)
     expect(logs[0].completed).toBe('full')
   })
 
@@ -150,7 +152,7 @@ describe('WorkoutPlayer', () => {
       expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
     })
 
-    it('shows no suggestion when there are fewer than 2 qualifying prior sessions', async () => {
+    it('suggests an increase after just 1 qualifying prior session plus today, matching the domain function\'s 2-session contract', async () => {
       await db.workoutLogs.add({
         date: '2026-09-08',
         workoutDayId: 'A',
@@ -158,6 +160,17 @@ describe('WorkoutPlayer', () => {
         exercises: [{ name: 'Goblet Squat', sets: 3, reps: 15, hitTopOfRange: true }],
       })
 
+      render(<WorkoutPlayer />)
+      const toggle = await screen.findByLabelText(/hit the top of the range today\?/i)
+      await userEvent.click(toggle)
+      await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
+
+      expect(
+        await screen.findByText(/try adding a rep or a bit more resistance on: goblet squat/i)
+      ).toBeInTheDocument()
+    })
+
+    it('shows no suggestion when there are fewer than 2 total qualifying sessions', async () => {
       render(<WorkoutPlayer />)
       const toggle = await screen.findByLabelText(/hit the top of the range today\?/i)
       await userEvent.click(toggle)

@@ -41,17 +41,17 @@ export function WorkoutPlayer() {
         const priorSessions = pastLogs
           .filter((log) => log.exercises.some((le) => le.name === exercise.name && le.hitTopOfRange !== undefined))
           .slice(-2)
-        // Require 2 qualifying prior sessions (not just 1) before today's result can complete a streak.
-        if (priorSessions.length >= 2) {
-          const history: SessionResult[] = [
-            ...priorSessions.map((log) => ({
-              hitTopOfRange: log.exercises.find((le) => le.name === exercise.name)!.hitTopOfRange!,
-            })),
-            { hitTopOfRange: toggled },
-          ]
-          if (suggestProgressiveOverload(history)) {
-            overloadCandidates.push(exercise.name)
-          }
+        // suggestProgressiveOverload already only looks at the last 2 sessions of whatever
+        // history it's given (and safely returns false when there are fewer than 2 total),
+        // so there's no need to gate on priorSessions.length here.
+        const history: SessionResult[] = [
+          ...priorSessions.map((log) => ({
+            hitTopOfRange: log.exercises.find((le) => le.name === exercise.name)!.hitTopOfRange!,
+          })),
+          { hitTopOfRange: toggled },
+        ]
+        if (suggestProgressiveOverload(history)) {
+          overloadCandidates.push(exercise.name)
         }
       }
 

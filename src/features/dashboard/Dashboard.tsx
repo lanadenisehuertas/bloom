@@ -29,7 +29,7 @@ export function Dashboard() {
       {downshiftRecommended && (
         <Card className="bg-clay-50">
           <p className="text-sm text-clay-700">
-            Let's pick back up today — no penalty. This week's plan is scaled down to rebuild momentum.
+            Let's pick back up today — no penalty for a rough week. Start with whatever feels doable.
           </p>
         </Card>
       )}

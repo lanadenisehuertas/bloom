@@ -19,4 +19,16 @@ describe('ProgressScreen', () => {
     render(<ProgressScreen />)
     expect(await screen.findByText(/7-day average/i)).toBeInTheDocument()
   })
+
+  it('computes and displays the correct 7-day rolling average, not just a static label', async () => {
+    render(<ProgressScreen />)
+    // seeded weights (80, 79.8, 80.2), rolling average of all logged-so-far each day -> latest = (80+79.8+80.2)/3 = 80.0
+    expect(await screen.findByText('80.0kg')).toBeInTheDocument()
+  })
+
+  it('shows a placeholder dash when there are no weigh-ins logged', async () => {
+    await db.dailyLogs.clear()
+    render(<ProgressScreen />)
+    expect(await screen.findByText('—')).toBeInTheDocument()
+  })
 })

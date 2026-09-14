@@ -6,7 +6,7 @@ import { Button } from '../../components/Button'
 import { StatTile } from '../../components/StatTile'
 import { Pill } from '../../components/Pill'
 import { Modal } from '../../components/Modal'
-import { Flame, Droplet, ArrowUpRight, Dumbbell, Sparkles, Plus, ClipboardCheck } from 'lucide-react'
+import { Flame, Droplet, ArrowUpRight, Dumbbell, Sparkles, Plus, ClipboardCheck, CalendarDays } from 'lucide-react'
 import { useProfile } from '../../hooks/useProfile'
 import { useTodayLog } from '../../hooks/useTodayLog'
 import { useCycle } from '../../hooks/useCycle'
@@ -97,6 +97,21 @@ export function Dashboard() {
           {profile?.motivationReason || 'Building your hourglass shape, one session at a time.'}
         </p>
       </Card>
+
+      <Link to="/week">
+        <Card tone="mint" className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <CalendarDays size={22} aria-hidden="true" />
+            <div>
+              <h3 className="font-display text-lg font-bold leading-snug">See this week</h3>
+              <p className={`text-label font-medium ${TONE_MUTED.mint}`}>
+                Browse the plan, day by day
+              </p>
+            </div>
+          </div>
+          <ArrowUpRight size={20} aria-hidden="true" />
+        </Card>
+      </Link>
 
       <div className="grid grid-cols-2 gap-3">
         <StatTile

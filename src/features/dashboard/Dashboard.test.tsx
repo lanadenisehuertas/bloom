@@ -44,6 +44,15 @@ describe('Dashboard', () => {
     expect(await screen.findByRole('link', { name: /exercise library/i })).toHaveAttribute('href', '/exercises')
   })
 
+  it('links to the week view', async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByRole('link', { name: /see this week/i })).toHaveAttribute('href', '/week')
+  })
+
   it('opens the weekly check-in modal', async () => {
     render(
       <MemoryRouter>

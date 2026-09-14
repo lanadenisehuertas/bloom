@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { Dashboard } from './features/dashboard/Dashboard'
 import { WorkoutPlayer } from './features/workout/WorkoutPlayer'
 import { ExerciseLibrary } from './features/exercises/ExerciseLibrary'
+import { WeekView } from './features/week/WeekView'
 import { NutritionScreen } from './features/nutrition/NutritionScreen'
 import { CycleTracker } from './features/cycle/CycleTracker'
 import { ProgressScreen } from './features/progress/ProgressScreen'
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'workout', element: <WorkoutPlayer /> },
       { path: 'exercises', element: <ExerciseLibrary /> },
+      { path: 'week', element: <WeekView /> },
       { path: 'nutrition', element: <NutritionScreen /> },
       { path: 'cycle', element: <CycleTracker /> },
       { path: 'progress', element: <ProgressScreen /> },

@@ -4,11 +4,15 @@ import { Card } from '../../components/Card'
 import { TONE_MUTED } from '../../components/tones'
 import { Button } from '../../components/Button'
 import { Pill } from '../../components/Pill'
+import { ProgressRing } from '../../components/ProgressRing'
 import { RECIPES, Recipe } from '../../data/recipes'
 import { useProfile } from '../../hooks/useProfile'
 import { useSettings } from '../../hooks/useSettings'
+import { useFoodLog } from '../../hooks/useFoodLog'
 import { calcBMR, calcTDEE, calcDailyTargets } from '../../domain/nutrition'
+import { computeCalorieProgress } from '../../domain/calories'
 import { GroceryList } from './GroceryList'
+import { FoodLogger } from './FoodLogger'
 
 const SLOT_LABELS: Record<Recipe['slot'], string> = {
   breakfast: 'Breakfast', lunch: 'Lunch', snack: 'Snack', dinner: 'Dinner',
@@ -31,12 +35,17 @@ function groupBySlot(recipes: Recipe[]) {
 export function NutritionScreen() {
   const { profile } = useProfile()
   const { settings } = useSettings()
+  const { totals } = useFoodLog()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showGroceryList, setShowGroceryList] = useState(false)
 
   const targets = profile
     ? calcDailyTargets(calcTDEE(calcBMR(profile.weightKg, profile.heightCm, profile.age), profile.activityLevel), profile.weightKg)
     : { calorieTarget: settings.currentCalorieTarget, proteinTarget: settings.currentProteinTarget }
+
+  const progress = computeCalorieProgress(totals.kcal, targets.calorieTarget)
+  const proteinFraction =
+    targets.proteinTarget > 0 ? Math.min(1, Math.max(0, totals.proteinG / targets.proteinTarget)) : 0
 
   function toggle(id: string) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -71,22 +80,50 @@ export function NutritionScreen() {
         <h1 className="font-display text-3xl font-extrabold leading-tight">Food</h1>
       </header>
 
-      {/* Hero: the number she's actually steering by */}
+      {/* Hero: the number she's actually steering by, tracked against what's
+          actually been logged today (not just the static target). */}
       <Card tone="rose" data-testid="daily-target">
         <Pill className="bg-white/20 text-white">
           <Flame size={13} aria-hidden="true" />
           Daily target
         </Pill>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="numerals font-display text-numeral font-extrabold">
-            {targets.calorieTarget}
-          </span>
-          <span className={`font-body text-[15px] font-bold ${TONE_MUTED.rose}`}>kcal</span>
+        <div className="mt-3 flex items-center gap-4">
+          <ProgressRing
+            value={progress.fractionOfTarget}
+            label={progress.isOverTarget ? 'over target' : 'of target'}
+            trackClass="stroke-white/25"
+            barClass="stroke-white"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="numerals font-display text-numeral font-extrabold">
+                {Math.abs(progress.remaining)}
+              </span>
+            </div>
+            <p className={`mt-1 text-label font-medium ${TONE_MUTED.rose}`}>
+              {progress.isOverTarget
+                ? `kcal above your ${targets.calorieTarget} target today — totally fine`
+                : `kcal remaining of ${targets.calorieTarget} today`}
+            </p>
+            <div className="mt-3">
+              <div className="flex items-baseline justify-between">
+                <span className={`text-label font-medium ${TONE_MUTED.rose}`}>Protein</span>
+                <span className="numerals text-label font-bold text-white">
+                  {totals.proteinG}g / {targets.proteinTarget}g
+                </span>
+              </div>
+              <div className="mt-1 h-2 w-full rounded-full bg-white/25">
+                <div
+                  className="h-2 rounded-full bg-white transition-[width] duration-200"
+                  style={{ width: `${Math.round(proteinFraction * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-        <p className={`mt-1 text-label font-medium ${TONE_MUTED.rose}`}>
-          <span className="numerals font-bold">{targets.proteinTarget}g</span> protein to hit today
-        </p>
       </Card>
+
+      <FoodLogger />
 
       {groupBySlot(RECIPES).map(({ slot, recipes }) => (
         <section key={slot} className="space-y-3">

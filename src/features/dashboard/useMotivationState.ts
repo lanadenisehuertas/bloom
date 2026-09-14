@@ -4,6 +4,7 @@ import { computeStreak } from '../../domain/motivation'
 import { checkMissedWorkouts } from '../../domain/adaptiveRecalc'
 import { getScheduledDay } from '../../data/workoutProgram'
 import { useSettings } from '../../hooks/useSettings'
+import { useProfile } from '../../hooks/useProfile'
 
 const REAL_WORKOUT_DAY_IDS = new Set(['A', 'B', 'C', 'D'])
 
@@ -28,6 +29,7 @@ function datesBetween(start: string, endExclusive: string): string[] {
 export function useMotivationState() {
   const logs = useLiveQuery(() => db.workoutLogs.toArray(), []) ?? []
   const { settings } = useSettings()
+  const { profile } = useProfile()
 
   // computeStreak's contract (see src/domain/motivation.ts) requires that whatever
   // tracks "grace days used" derive that count the same way computeStreak itself does
@@ -45,6 +47,12 @@ export function useMotivationState() {
 
   const today = new Date().toISOString().slice(0, 10)
   const thisWeekStart = startOfWeek(today)
+  // Clamp the range to never start before the user's profile was created — a
+  // mid-week signup shouldn't have days before the app was even installed
+  // counted as "missed" real workout days.
+  const profileCreatedDate = profile?.createdAt?.slice(0, 10)
+  const rangeStart =
+    profileCreatedDate && profileCreatedDate > thisWeekStart ? profileCreatedDate : thisWeekStart
   const loggedDates = new Set(logs.map((l) => l.date))
 
   // "Missed" is derived from the schedule vs. what's actually logged, rather than
@@ -53,7 +61,7 @@ export function useMotivationState() {
   // A day the user simply never opens the app leaves no row at all, so we detect
   // that absence directly: for each past day this week that was scheduled as a
   // real workout (A/B/C/D, not recovery/rest), no logged entry means it was missed.
-  const missedThisWeek = datesBetween(thisWeekStart, today).filter((date) => {
+  const missedThisWeek = datesBetween(rangeStart, today).filter((date) => {
     const dayOfWeek = new Date(date).getDay()
     const scheduledDay = getScheduledDay(dayOfWeek)
     return REAL_WORKOUT_DAY_IDS.has(scheduledDay.id) && !loggedDates.has(date)

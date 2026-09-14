@@ -53,4 +53,18 @@ describe('useMotivationState', () => {
     const { result } = renderHook(() => useMotivationState())
     await waitFor(() => expect(result.current.downshiftRecommended).toBe(true))
   })
+
+  it('does not count days before the user created their profile as missed', async () => {
+    // pinned "today" is Saturday 2026-09-19 (see other tests in this file); profile created
+    // Friday 2026-09-18, so Monday(A)/Wednesday(B)/Thursday(C) all predate the account and
+    // must not count as missed, even though none of them have a logged workout.
+    vi.setSystemTime(new Date('2026-09-19T09:00:00')) // Saturday
+    await db.profile.put({
+      id: 'default', heightCm: 175, weightKg: 80, age: 21, activityLevel: 'lightlyActive',
+      goalWeightKg: 74, goalDate: '2026-10-31', equipment: [], injuryNotes: '',
+      createdAt: '2026-09-18T10:00:00.000Z',
+    })
+    const { result } = renderHook(() => useMotivationState())
+    await waitFor(() => expect(result.current.downshiftRecommended).toBe(false))
+  })
 })

@@ -19,6 +19,28 @@ export function currentCycleDay(lastPeriodStartDate: string, today: string): num
   return Math.floor((now - start) / MS_PER_DAY) + 1
 }
 
+/**
+ * Projects which phase a FUTURE date will fall in, given the last known period
+ * start and the learned average cycle length. Used by the weekly/dashboard
+ * preview — it's explicitly a projection (best guess from history), not a
+ * measurement, and always adjusts as newer period-start data comes in since it's
+ * recomputed from `avgCycleLength`/`periodStartDates` each time, never cached.
+ *
+ * `currentCycleDay` returns a raw day count that isn't bounded to one cycle
+ * (e.g. day 30 of a 28-day cycle), so this wraps it back into range before
+ * calling `detectPhase` — otherwise a date far enough out would be miscounted
+ * as an impossibly long luteal phase instead of wrapping to the next period.
+ */
+export function projectCyclePhase(
+  lastPeriodStartDate: string,
+  targetDate: string,
+  avgCycleLength: number
+): CyclePhase {
+  const rawDay = currentCycleDay(lastPeriodStartDate, targetDate)
+  const wrappedDay = ((((rawDay - 1) % avgCycleLength) + avgCycleLength) % avgCycleLength) + 1
+  return detectPhase(wrappedDay, avgCycleLength)
+}
+
 export function learnAvgCycleLength(periodStartDates: string[]): number {
   if (periodStartDates.length < 2) return 28
   const sorted = [...periodStartDates].sort()

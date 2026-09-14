@@ -3,9 +3,10 @@ import { WORKOUT_DAYS, getScheduledDay } from './workoutProgram'
 import { getExercise } from './exercises'
 
 describe('WORKOUT_DAYS', () => {
-  it('references only exercise ids that actually exist in the exercise library', () => {
+  it('references only exercise ids that actually exist in the exercise library, or the known virtual push-up slot', () => {
     const allExerciseIds = Object.values(WORKOUT_DAYS).flatMap((day) => day.exercises.map((e) => e.exerciseId))
     for (const id of allExerciseIds) {
+      if (id === 'pushup-current-level') continue // resolved dynamically by WorkoutPlayer, not a real exercise
       expect(() => getExercise(id)).not.toThrow()
     }
   })

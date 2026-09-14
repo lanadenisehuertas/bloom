@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { detectPhase, currentCycleDay, learnAvgCycleLength } from './cycle'
+import { detectPhase, currentCycleDay, learnAvgCycleLength, projectCyclePhase } from './cycle'
 
 describe('detectPhase', () => {
   it('classifies each phase per the spec boundaries (28-day default)', () => {
@@ -24,6 +24,23 @@ describe('currentCycleDay', () => {
   it('computes the 1-indexed day since the last period start', () => {
     expect(currentCycleDay('2026-09-01', '2026-09-01')).toBe(1)
     expect(currentCycleDay('2026-09-01', '2026-09-15')).toBe(15)
+  })
+})
+
+describe('projectCyclePhase', () => {
+  const start = '2026-09-01'
+
+  it('matches detectPhase for a date within the current cycle', () => {
+    expect(projectCyclePhase(start, '2026-09-01', 28)).toBe('menstrual')
+    expect(projectCyclePhase(start, '2026-09-15', 28)).toBe('luteal')
+  })
+
+  it('wraps into a new cycle instead of miscounting as an impossibly long luteal phase', () => {
+    // 28 days after the period start is day 29 raw -> wraps to day 1 of the NEXT
+    // cycle, i.e. the next predicted period, not "still luteal".
+    expect(projectCyclePhase(start, '2026-09-29', 28)).toBe('menstrual')
+    // 34 days after start (day 35 raw) -> wraps to day 7 of the next cycle -> follicular.
+    expect(projectCyclePhase(start, '2026-10-05', 28)).toBe('follicular')
   })
 })
 

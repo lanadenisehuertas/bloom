@@ -75,6 +75,50 @@ export interface Milestone {
   label: string
 }
 
+export interface FoodServing {
+  label: string // e.g. "1 cup", "1 pc", "1 serving" — always a household measure, never a raw unit conversion
+  grams: number
+}
+
+export interface FoodNutrients {
+  kcal: number // per 100g
+  proteinG: number // per 100g
+  carbG?: number
+  fatG?: number
+}
+
+/** Shape shared by the static seeded food list and user-created custom foods. */
+export interface FoodBase {
+  name: string
+  servings: FoodServing[]
+  per100g: FoodNutrients
+}
+
+export interface Food extends FoodBase {
+  id: string
+}
+
+/** User-created foods — persisted, unlike the static seeded list. */
+export interface CustomFood extends FoodBase {
+  id?: number
+  createdAt: string
+}
+
+export interface FoodLogEntry {
+  id?: number
+  date: string // local YYYY-MM-DD (see src/lib/localDate.ts) — matches dailyLogs/workoutLogs keying
+  loggedAt: string // full ISO timestamp, for ordering within a day
+  slot: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+  /** Reference only, for "log again" — never re-read to compute totals; see the
+   *  fields below, which are a permanent snapshot taken at log time. */
+  foodId?: string
+  name: string
+  servingLabel: string
+  quantity: number
+  kcal: number
+  proteinG: number
+}
+
 export interface SettingsRecord {
   id: 'default'
   lastRecalcDate: string
@@ -83,4 +127,6 @@ export interface SettingsRecord {
   streakCount: number
   graceDaysAvailable: number
   graceDaysUsedThisMonth: number
+  /** Current step in PUSHUP_PROGRESSION (src/data/exercises.ts) — defaults to 'pushup-wall'. */
+  pushupLevel?: string
 }

@@ -1,17 +1,36 @@
 import { useState } from 'react'
-import { ArrowUpRight, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Sparkles, TrendingUp, HeartPulse } from 'lucide-react'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
 import { Pill } from '../../components/Pill'
 import { getScheduledDay } from '../../data/workoutProgram'
-import { getExercise } from '../../data/exercises'
+import { getExercise, PUSHUP_PROGRESSION, nextPushupLevel } from '../../data/exercises'
 import { MUSCLE_GROUP_LABELS } from '../../data/muscleGroups'
 import { useWorkoutLog } from '../../hooks/useWorkoutLog'
 import { buildFormVideoLinks } from '../../domain/formVideos'
 import { useCycle } from '../../hooks/useCycle'
+import { useSettings } from '../../hooks/useSettings'
+import { useWellbeingState } from '../../hooks/useWellbeingState'
 import { applyCyclePhaseModifier, suggestProgressiveOverload, SessionResult } from '../../domain/workoutProgram'
 import { db } from '../../db'
 import { WorkoutLogExercise } from '../../db/schema'
+
+/** Exercises that bear weight on one leg — offer a support note when joint pain
+ *  was flagged this week, rather than only swapping the cardio finisher. */
+const SINGLE_LEG_EXERCISE_IDS = new Set(['single-leg-glute-bridge', 'step-up', 'donkey-kicks'])
+
+/**
+ * 'pushup-current-level' is a virtual program slot (not a real exercise) — this
+ * resolves it to whichever push-up progression step the user is actually on,
+ * and resolves the cardio finisher to its low-impact variant when this week's
+ * Weekly Check-in flagged joint pain. Both are "the check-in should matter"
+ * fixes: real answers changing what's actually shown, not just stored.
+ */
+function resolveExerciseId(rawId: string, pushupLevel: string, jointPainFlagged: boolean): string {
+  if (rawId === 'pushup-current-level') return pushupLevel
+  if (rawId === 'cardio-circuit' && jointPainFlagged) return 'cardio-circuit-low-impact'
+  return rawId
+}
 
 /**
  * Step-badge accents cycle through the palette. Colouring the whole card by muscle
@@ -31,18 +50,31 @@ function isRepRangeExercise(reps: string): boolean {
 
 export function WorkoutPlayer() {
   const day = getScheduledDay(new Date().getDay())
-  const { logWorkout } = useWorkoutLog()
+  const { logWorkout, logs } = useWorkoutLog()
   const { phase } = useCycle()
+  const { settings, updateSettings } = useSettings()
+  const { jointPainFlagged } = useWellbeingState()
   const modifier = phase ? applyCyclePhaseModifier(day, phase) : null
   const [hitTopOfRange, setHitTopOfRange] = useState<Record<string, boolean>>({})
   const [overloadSuggestions, setOverloadSuggestions] = useState<string[]>([])
+  const [repCeilingSuggestions, setRepCeilingSuggestions] = useState<string[]>([])
+  const [readyToLevelUp, setReadyToLevelUp] = useState(false)
+
+  const pushupLevel = settings.pushupLevel ?? PUSHUP_PROGRESSION[0]
 
   async function complete(completion: 'full' | 'minimal') {
     const overloadCandidates: string[] = []
+    // Once a rep range's own ceiling is high enough to be an endurance range
+    // rather than a hypertrophy one, "add a rep" stops being useful advice —
+    // with fixed 5kg dumbbells there's no heavier weight to progress to, so the
+    // suggestion needs a different lever (tempo/unilateral/pause) instead of an
+    // ever-climbing rep count that eventually becomes cardio, not strength work.
+    const nearRepCeiling: string[] = []
 
     const exercises: WorkoutLogExercise[] = []
     for (const e of day.exercises) {
-      const exercise = getExercise(e.exerciseId)
+      const resolvedId = resolveExerciseId(e.exerciseId, pushupLevel, jointPainFlagged)
+      const exercise = getExercise(resolvedId)
       const entry: WorkoutLogExercise = { name: exercise.name, sets: e.sets, reps: Number.parseInt(e.reps) || 0 }
 
       if (completion === 'full' && isRepRangeExercise(e.reps)) {
@@ -63,7 +95,12 @@ export function WorkoutPlayer() {
           { hitTopOfRange: toggled },
         ]
         if (suggestProgressiveOverload(history)) {
-          overloadCandidates.push(exercise.name)
+          const rangeTop = Number(REP_RANGE_PATTERN.exec(e.reps)?.[2] ?? 0)
+          if (rangeTop >= 15) {
+            nearRepCeiling.push(exercise.name)
+          } else {
+            overloadCandidates.push(exercise.name)
+          }
         }
       }
 
@@ -78,6 +115,19 @@ export function WorkoutPlayer() {
     })
 
     setOverloadSuggestions(overloadCandidates)
+    setRepCeilingSuggestions(nearRepCeiling)
+
+    // Push-up level-up check: 2 FULL sessions logged at the current level (this one
+    // included) is the signal to offer the next step — "max clean reps" has no
+    // numeric target to toggle against the way a rep-range exercise does, so
+    // completion itself is what "hit the top" means here.
+    if (completion === 'full' && day.exercises.some((e) => e.exerciseId === 'pushup-current-level')) {
+      const currentLevelName = getExercise(pushupLevel).name
+      const priorFullSessionsAtLevel = logs.filter(
+        (l) => l.completed === 'full' && l.exercises.some((le) => le.name === currentLevelName)
+      ).length
+      setReadyToLevelUp(priorFullSessionsAtLevel + 1 >= 2 && nextPushupLevel(pushupLevel) !== null)
+    }
   }
 
   if (day.id === 'rest') {
@@ -106,6 +156,19 @@ export function WorkoutPlayer() {
         </p>
         <h1 className="font-display text-3xl font-extrabold leading-tight">{day.title}</h1>
       </header>
+
+      {jointPainFlagged && (
+        <Card tone="lilac">
+          <Pill className="bg-ink-900/10">
+            <HeartPulse size={13} aria-hidden="true" />
+            From your check-in
+          </Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
+            You flagged joint pain this week, so today's cardio finisher (if any) is swapped to a
+            gentler, low-impact version, and single-leg moves are worth doing near a wall or chair for support.
+          </p>
+        </Card>
+      )}
 
       {modifier?.suggestSwapToRecovery && (
         <Card tone="lilac">
@@ -151,7 +214,8 @@ export function WorkoutPlayer() {
         )}
 
       {day.exercises.map((programExercise, index) => {
-        const exercise = getExercise(programExercise.exerciseId)
+        const resolvedId = resolveExerciseId(programExercise.exerciseId, pushupLevel, jointPainFlagged)
+        const exercise = getExercise(resolvedId)
         const videoLinks = buildFormVideoLinks(exercise.name)
         const repReductionPct = modifier?.repReductionPct ?? 0
         const isPlainNumberReps = /^\d+$/.test(programExercise.reps)
@@ -190,6 +254,11 @@ export function WorkoutPlayer() {
             {repReductionPct > 0 && !isPlainNumberReps && (
               <p className="mt-2 text-label text-ink-500">
                 (today: aim for ~30% fewer reps, or whatever feels sustainable)
+              </p>
+            )}
+            {jointPainFlagged && SINGLE_LEG_EXERCISE_IDS.has(programExercise.exerciseId) && (
+              <p className="mt-2 text-label text-ink-500">
+                (use a wall or sturdy chair for support today)
               </p>
             )}
             {isRepRangeExercise(programExercise.reps) && (
@@ -248,6 +317,44 @@ export function WorkoutPlayer() {
           <p className="mt-2 font-body text-[15px] font-medium leading-snug">
             Nice work — next time, try adding a rep or a bit more resistance on: {overloadSuggestions.join(', ')}.
           </p>
+        </Card>
+      )}
+
+      {repCeilingSuggestions.length > 0 && (
+        <Card tone="sun">
+          <Pill className="bg-ink-900/10">
+            <TrendingUp size={13} aria-hidden="true" />
+            Progress
+          </Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
+            You've maxed the rep range on {repCeilingSuggestions.join(', ')} — with fixed dumbbells, a
+            higher rep count stops adding much. Try a slower 3-second lowering phase, a single-arm/single-leg
+            version, or a brief pause at the hardest point instead of just more reps.
+          </p>
+        </Card>
+      )}
+
+      {readyToLevelUp && nextPushupLevel(pushupLevel) && (
+        <Card tone="mint">
+          <Pill className="bg-ink-900/10">
+            <TrendingUp size={13} aria-hidden="true" />
+            Push-up progress
+          </Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
+            Two solid sessions at {getExercise(pushupLevel).name.toLowerCase()} — ready to try{' '}
+            {getExercise(nextPushupLevel(pushupLevel)!).name.toLowerCase()} next time?
+          </p>
+          <Button
+            variant="onColor"
+            className="mt-3"
+            onClick={() => {
+              const next = nextPushupLevel(pushupLevel)
+              if (next) updateSettings({ pushupLevel: next })
+              setReadyToLevelUp(false)
+            }}
+          >
+            Level up
+          </Button>
         </Card>
       )}
 

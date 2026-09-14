@@ -43,8 +43,13 @@ export function useMilestones() {
   const milestones = useLiveQuery(() => db.milestones.toArray(), []) ?? []
   const { profile } = useProfile()
 
+  // "First full push-up" specifically means reaching STANDARD push-ups (the last
+  // step of the progression, see PUSHUP_PROGRESSION in data/exercises.ts) — logging
+  // a completed session that included that exact exercise is the signal, not
+  // `hitTopOfRange`, which only applies to numeric rep-range exercises and was
+  // never set for push-ups (a "max clean reps" exercise) in the first place.
   const firstFullPushupLogged = workoutLogs.some((log) =>
-    log.exercises.some((e) => e.name === 'Push-Up Progression' && e.hitTopOfRange === true)
+    log.exercises.some((e) => e.name === 'Standard Push-Up')
   )
 
   // This milestone is "a literal full week", not "a week that survived on grace days" —

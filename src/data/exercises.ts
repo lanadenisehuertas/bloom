@@ -31,12 +31,27 @@ export const EXERCISES: Exercise[] = [
   { id: 'standing-hip-abduction', name: 'Standing Banded Hip Abduction', muscleGroup: 'glutes',
     cues: ['Band around ankles, hold onto a wall/chair', 'Lift leg straight out to the side, slow and controlled'],
     commonMistakes: ['Leaning the torso away to swing the leg higher'] },
-  { id: 'pushup-progression', name: 'Push-Up Progression', muscleGroup: 'upperBody',
-    cues: ['Start at your current level: wall, incline, knee, negative, or standard', 'Hands under shoulders, body in one straight line'],
+  { id: 'pushup-wall', name: 'Wall Push-Up', muscleGroup: 'upperBody',
+    cues: ['Stand arm\'s length from a wall, hands at shoulder height and width', 'Keep body in one straight line, lower chest toward the wall and press back'],
+    commonMistakes: ['Standing too close, which shortens the range of motion', 'Letting hips sag forward'] },
+  { id: 'pushup-incline', name: 'Incline Push-Up', muscleGroup: 'upperBody',
+    cues: ['Hands on a sturdy waist-high surface (counter, sturdy table)', 'Body in one straight line from head to heels, lower chest to the edge'],
+    commonMistakes: ['Surface too low too soon — raise it back up if form breaks down', 'Hips piking up to make it easier'] },
+  { id: 'pushup-knee', name: 'Knee Push-Up', muscleGroup: 'upperBody',
+    cues: ['Hands under shoulders, knees on the floor, shins lifted behind you', 'Straight line from head to knees the whole way down and up'],
+    commonMistakes: ['Hips sagging low, turning it into a plank fold instead of a straight line', 'Only doing a partial range of motion'] },
+  { id: 'pushup-negative', name: 'Negative Push-Up', muscleGroup: 'upperBody',
+    cues: ['Start at the top of a standard push-up', 'Lower yourself down as slowly as you can (aim for 3-5 seconds), then reset from the floor'],
+    commonMistakes: ['Dropping fast instead of controlling the descent — the slow lower is the entire point', 'Not resetting from the floor between reps'] },
+  { id: 'pushup-standard', name: 'Standard Push-Up', muscleGroup: 'upperBody',
+    cues: ['Hands under shoulders, body in one straight line', 'Lower until chest nearly touches the floor, then press back up'],
     commonMistakes: ['Hips sagging or piking', 'Elbows flaring straight out to 90°'] },
   { id: 'db-bent-over-row', name: 'Dumbbell Bent-Over Row', muscleGroup: 'upperBody',
     cues: ['Hinge at hips, flat back', 'Pull dumbbells to ribs, squeeze shoulder blades'],
     commonMistakes: ['Rounding the lower back', 'Using momentum/yanking the weight up'] },
+  { id: 'banded-lat-pulldown', name: 'Banded Lat Pulldown', muscleGroup: 'upperBody',
+    cues: ['Anchor the band up high (a door, a sturdy hook)', 'Pull elbows down and back, driving them toward your hips'],
+    commonMistakes: ['Pulling with the arms instead of driving the elbows down', 'Arching the back to help the pull'] },
   { id: 'reverse-fly', name: 'Reverse Fly', muscleGroup: 'upperBody',
     cues: ['Hinge forward, slight elbow bend', 'Raise arms out to the sides, squeeze shoulder blades together'],
     commonMistakes: ['Shrugging shoulders up toward ears', 'Using momentum instead of the upper back'] },
@@ -97,10 +112,27 @@ export const EXERCISES: Exercise[] = [
   { id: 'active-recovery-flow', name: 'Active Recovery Flow', muscleGroup: 'mobility',
     cues: ['Cat-cow, hip circles, thread-the-needle, child\'s pose, neck/shoulder rolls', 'Move slowly, breathe deeply, stop short of any pain'],
     commonMistakes: ['Rushing through holds instead of breathing into them'] },
+  { id: 'cardio-circuit-low-impact', name: 'Low-Impact Cardio Finisher', muscleGroup: 'cardio',
+    cues: ['40s on / 20s off: step-jacks, marching high knees, slow mountain climbers', 'Keep both feet closer to the floor — the point is elevated heart rate, not impact'],
+    commonMistakes: ['Rushing the marching pace to compensate for skipping the jump'] },
 ]
 
 export function getExercise(id: string): Exercise {
   const ex = EXERCISES.find((e) => e.id === id)
   if (!ex) throw new Error(`Unknown exercise id: ${id}`)
   return ex
+}
+
+/**
+ * Ordered push-up progression — someone who can't do one standard push-up needs
+ * an explicit, named step to attempt each week, not a single opaque line item.
+ * `WorkoutPlayer` resolves the program's virtual 'pushup-current-level' slot to
+ * whichever of these the user is currently on (see `settings.pushupLevel`).
+ */
+export const PUSHUP_PROGRESSION = ['pushup-wall', 'pushup-incline', 'pushup-knee', 'pushup-negative', 'pushup-standard']
+
+export function nextPushupLevel(currentId: string): string | null {
+  const i = PUSHUP_PROGRESSION.indexOf(currentId)
+  if (i === -1 || i === PUSHUP_PROGRESSION.length - 1) return null
+  return PUSHUP_PROGRESSION[i + 1]
 }

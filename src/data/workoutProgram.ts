@@ -30,8 +30,11 @@ export const WORKOUT_DAYS: Record<string, WorkoutDay> = {
   B: {
     id: 'B', title: 'Upper Body, Arms & Back', durationMinutes: '35-40',
     exercises: [
-      { exerciseId: 'pushup-progression', sets: 3, reps: 'max clean reps' },
+      // 'pushup-current-level' is a virtual slot, not a real exercise id — WorkoutPlayer
+      // resolves it to whichever step of PUSHUP_PROGRESSION the user is currently on.
+      { exerciseId: 'pushup-current-level', sets: 3, reps: 'max clean reps' },
       { exerciseId: 'db-bent-over-row', sets: 3, reps: '12' },
+      { exerciseId: 'banded-lat-pulldown', sets: 3, reps: '15' },
       { exerciseId: 'reverse-fly', sets: 3, reps: '15' },
       { exerciseId: 'band-pull-apart', sets: 3, reps: '15' },
       { exerciseId: 'db-overhead-press', sets: 3, reps: '10-12' },

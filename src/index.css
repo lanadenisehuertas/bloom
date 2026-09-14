@@ -53,6 +53,30 @@ input, select, textarea {
 /* Tabular figures keep big numerals from jittering as values change */
 .numerals { font-variant-numeric: tabular-nums; }
 
+/* Claymorphism: a soft, puffy card — big diffuse shadow below plus a bright inset
+   edge along the top to fake a light source. Used on light-tone blocks. */
+.clay {
+  box-shadow:
+    0 16px 32px -12px rgba(23, 23, 31, 0.28),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.55);
+}
+
+/* Same idea for the dark blocks (rose/forest/ink) — the inset highlight has to be
+   dimmer or it looks like a crack of light rather than a soft sheen. */
+.clay-dark {
+  box-shadow:
+    0 16px 32px -12px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+}
+
+/* Small, non-scrolling surfaces (buttons, chips, pills) get a shallower version so
+   they read as "raised" without competing with the cards they sit on. */
+.clay-sm {
+  box-shadow:
+    0 6px 14px -6px rgba(23, 23, 31, 0.25),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

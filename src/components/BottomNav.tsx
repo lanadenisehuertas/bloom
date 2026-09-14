@@ -14,7 +14,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="flex justify-between gap-0.5 rounded-t-block bg-ink-900 px-2 pt-2"
+      className="clay-dark relative z-10 flex justify-between gap-0.5 rounded-t-block bg-ink-900 px-2 pt-2"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
     >
       {items.map(({ to, label, icon: Icon }) => (
@@ -23,8 +23,10 @@ export function BottomNav() {
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            `flex min-h-[48px] flex-1 flex-col items-center justify-center gap-1 rounded-chip px-1 py-1.5 text-[10px] font-bold transition-colors duration-200 ${
-              isActive ? 'bg-sun text-ink-900' : 'text-white/70 active:text-white'
+            `flex min-h-[48px] flex-1 flex-col items-center justify-center gap-1 rounded-chip px-1 py-1.5 text-[10px] font-bold transition-[background-color,color,transform] duration-200 ${
+              isActive
+                ? 'clay-sm scale-105 bg-gradient-to-b from-sun to-[#F2B52E] text-ink-900'
+                : 'text-white/70 active:text-white'
             }`
           }
         >

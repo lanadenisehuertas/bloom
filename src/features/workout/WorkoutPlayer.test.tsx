@@ -122,8 +122,11 @@ describe('WorkoutPlayer', () => {
       await userEvent.click(toggle)
       await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
 
+      // Goblet Squat's range tops out at 15 — at that ceiling, fixed 5kg dumbbells
+      // have nowhere left to progress via "add a rep", so this now suggests a
+      // different lever (tempo/unilateral/pause) instead of an ever-climbing rep count.
       expect(
-        await screen.findByText(/try adding a rep or a bit more resistance on: goblet squat/i)
+        await screen.findByText(/maxed the rep range on goblet squat/i)
       ).toBeInTheDocument()
 
       const logs = await db.workoutLogs.orderBy('date').toArray()
@@ -153,6 +156,7 @@ describe('WorkoutPlayer', () => {
       await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
 
       expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/maxed the rep range/i)).not.toBeInTheDocument()
     })
 
     it('suggests an increase after just 1 qualifying prior session plus today, matching the domain function\'s 2-session contract', async () => {
@@ -169,7 +173,7 @@ describe('WorkoutPlayer', () => {
       await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
 
       expect(
-        await screen.findByText(/try adding a rep or a bit more resistance on: goblet squat/i)
+        await screen.findByText(/maxed the rep range on goblet squat/i)
       ).toBeInTheDocument()
     })
 
@@ -180,6 +184,7 @@ describe('WorkoutPlayer', () => {
       await userEvent.click(screen.getByRole('button', { name: /complete workout/i }))
 
       expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/maxed the rep range/i)).not.toBeInTheDocument()
     })
 
     it('does not count a Minimum Viable Day toggle toward progressive-overload history', async () => {
@@ -204,6 +209,7 @@ describe('WorkoutPlayer', () => {
       await userEvent.click(screen.getByRole('button', { name: /minimum viable day/i }))
 
       expect(screen.queryByText(/try adding a rep/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/maxed the rep range/i)).not.toBeInTheDocument()
       const logs = await db.workoutLogs.orderBy('date').toArray()
       const todayLog = logs[logs.length - 1]
       const gobletEntry = todayLog.exercises.find((e) => e.name === 'Goblet Squat')

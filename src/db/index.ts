@@ -8,6 +8,8 @@ import {
   PhotoLog,
   Milestone,
   SettingsRecord,
+  CustomFood,
+  FoodLogEntry,
 } from './schema'
 
 export class BloomDB extends Dexie {
@@ -19,6 +21,8 @@ export class BloomDB extends Dexie {
   photoLogs!: Table<PhotoLog, number>
   milestones!: Table<Milestone, string>
   settings!: Table<SettingsRecord, string>
+  customFoods!: Table<CustomFood, number>
+  foodLogs!: Table<FoodLogEntry, number>
 
   constructor() {
     super('bloom-db')
@@ -31,6 +35,12 @@ export class BloomDB extends Dexie {
       photoLogs: '++id, date',
       milestones: 'id',
       settings: 'id',
+    })
+    // v2: adds calorie/food logging. Existing v1 tables/data are untouched —
+    // Dexie only needs the new tables listed for a version bump that purely adds.
+    this.version(2).stores({
+      customFoods: '++id, name',
+      foodLogs: '++id, date, [date+slot]',
     })
   }
 }

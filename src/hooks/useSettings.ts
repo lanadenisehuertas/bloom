@@ -6,6 +6,7 @@ const DEFAULT_SETTINGS: SettingsRecord = {
   id: 'default', lastRecalcDate: new Date().toISOString().slice(0, 10),
   currentCalorieTarget: 1900, currentProteinTarget: 128,
   streakCount: 0, graceDaysAvailable: 1, graceDaysUsedThisMonth: 0,
+  pushupLevel: 'pushup-wall',
 }
 
 export function useSettings() {

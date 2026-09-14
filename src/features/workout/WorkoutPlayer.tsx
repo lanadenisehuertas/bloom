@@ -4,10 +4,14 @@ import { getScheduledDay } from '../../data/workoutProgram'
 import { getExercise } from '../../data/exercises'
 import { useWorkoutLog } from '../../hooks/useWorkoutLog'
 import { buildFormVideoLinks } from '../../domain/formVideos'
+import { useCycle } from '../../hooks/useCycle'
+import { applyCyclePhaseModifier } from '../../domain/workoutProgram'
 
 export function WorkoutPlayer() {
   const day = getScheduledDay(new Date().getDay())
   const { logWorkout } = useWorkoutLog()
+  const { phase } = useCycle()
+  const modifier = phase ? applyCyclePhaseModifier(day, phase) : null
 
   async function complete(completion: 'full' | 'minimal') {
     await logWorkout({
@@ -37,13 +41,52 @@ export function WorkoutPlayer() {
       <h1 className="text-xl font-semibold">{day.title}</h1>
       <p className="text-sm text-ink-500">{day.durationMinutes} min</p>
 
+      {modifier?.suggestSwapToRecovery && (
+        <Card>
+          <p className="text-sm text-ink-700">
+            Today's your period — full permission to keep this light or swap to recovery if you need it.
+          </p>
+        </Card>
+      )}
+
+      {modifier?.testDay && (
+        <Card>
+          <p className="text-sm text-ink-700">
+            Peak energy day — if you're feeling strong, today's a good day to test a max clean rep or a bit
+            more resistance.
+          </p>
+        </Card>
+      )}
+
+      {modifier?.nudgeProgressiveOverload && (
+        <Card>
+          <p className="text-sm text-ink-700">
+            This is typically your highest-capacity week — consider adding a rep or a little resistance if
+            today's sets feel easy.
+          </p>
+        </Card>
+      )}
+
       {day.exercises.map((programExercise) => {
         const exercise = getExercise(programExercise.exerciseId)
         const videoLinks = buildFormVideoLinks(exercise.name)
+        const repReductionPct = modifier?.repReductionPct ?? 0
+        const isPlainNumberReps = /^\d+$/.test(programExercise.reps)
+        const displayedReps =
+          repReductionPct > 0 && isPlainNumberReps
+            ? Math.max(1, Math.round(Number.parseInt(programExercise.reps, 10) * (1 - repReductionPct / 100)))
+            : programExercise.reps
         return (
           <Card key={exercise.id}>
             <h3 className="font-medium">{exercise.name}</h3>
-            <p className="text-sm text-ink-500">{programExercise.sets} sets × {programExercise.reps}</p>
+            <p className="text-sm text-ink-500">
+              {programExercise.sets} sets × {displayedReps}
+            </p>
+            {repReductionPct > 0 && !isPlainNumberReps && (
+              <p className="text-xs text-clay-700">
+                (today: aim for ~30% fewer reps, or whatever feels sustainable)
+              </p>
+            )}
             <details className="mt-2 text-sm">
               <summary className="cursor-pointer text-sage-700">Form cues</summary>
               <ul className="mt-1 list-disc pl-5">

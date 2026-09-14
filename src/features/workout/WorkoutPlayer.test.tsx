@@ -49,4 +49,34 @@ describe('WorkoutPlayer', () => {
     expect(screen.queryByRole('button', { name: /complete workout/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /minimum viable day/i })).not.toBeInTheDocument()
   })
+
+  // Today is pinned to 2026-09-14 in beforeEach.
+  // currentCycleDay('2026-09-10', '2026-09-14') = floor(4 days) + 1 = 5 -> menstrual (cycleDay <= 5)
+  it('shows menstrual-phase guidance when the period was just logged', async () => {
+    await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-10'], avgCycleLength: 28, symptomsByDate: {} })
+    render(<WorkoutPlayer />)
+    expect(await screen.findByText(/full permission/i)).toBeInTheDocument()
+  })
+
+  // currentCycleDay('2026-09-01', '2026-09-14') = 14; ovulationDay = 28 - 14 = 14 -> ovulation (cycleDay === ovulationDay)
+  it('shows ovulation test-day guidance at peak cycle day', async () => {
+    await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-01'], avgCycleLength: 28, symptomsByDate: {} })
+    render(<WorkoutPlayer />)
+    expect(await screen.findByText(/peak energy/i)).toBeInTheDocument()
+  })
+
+  // currentCycleDay('2026-09-05', '2026-09-14') = floor(9 days) + 1 = 10 -> follicular (5 < cycleDay < ovulationDay 14)
+  it('shows a progressive-overload nudge during the follicular phase', async () => {
+    await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-05'], avgCycleLength: 28, symptomsByDate: {} })
+    render(<WorkoutPlayer />)
+    expect(await screen.findByText(/highest-capacity week/i)).toBeInTheDocument()
+  })
+
+  it('does not gate the completion buttons during the menstrual phase', async () => {
+    await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-10'], avgCycleLength: 28, symptomsByDate: {} })
+    render(<WorkoutPlayer />)
+    await screen.findByText(/full permission/i)
+    expect(screen.getByRole('button', { name: /complete workout/i })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /minimum viable day/i })).toBeEnabled()
+  })
 })

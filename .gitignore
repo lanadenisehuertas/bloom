@@ -24,3 +24,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel
+
+# Claude Code local session/tooling config — not part of the app
+.claude/

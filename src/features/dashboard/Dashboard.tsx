@@ -8,16 +8,16 @@ import { Droplet, Flame } from 'lucide-react'
 import { useProfile } from '../../hooks/useProfile'
 import { useTodayLog } from '../../hooks/useTodayLog'
 import { useCycle } from '../../hooks/useCycle'
-import { useSettings } from '../../hooks/useSettings'
 import { getScheduledDay } from '../../data/workoutProgram'
 import { applyCyclePhaseModifier } from '../../domain/workoutProgram'
 import { WeeklyCheckin } from '../checkin/WeeklyCheckin'
+import { useMotivationState } from './useMotivationState'
 
 export function Dashboard() {
   const { profile } = useProfile()
   const { log, updateToday } = useTodayLog()
   const { phase } = useCycle()
-  const { settings } = useSettings()
+  const { streak, downshiftRecommended } = useMotivationState()
   const [showCheckin, setShowCheckin] = useState(false)
   const isRestDay = new Date().getDay() === 0
 
@@ -26,6 +26,13 @@ export function Dashboard() {
 
   return (
     <div className="space-y-4">
+      {downshiftRecommended && (
+        <Card className="bg-clay-50">
+          <p className="text-sm text-clay-700">
+            Let's pick back up today — no penalty. This week's plan is scaled down to rebuild momentum.
+          </p>
+        </Card>
+      )}
       <Card className="bg-sage-50">
         <p className="text-sm text-sage-700">Why you're here</p>
         <p className="text-lg font-medium text-ink-900">
@@ -46,7 +53,7 @@ export function Dashboard() {
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
-        <StatTile icon={<Flame size={20} />} label="Streak" value={`${settings.streakCount} days`} />
+        <StatTile icon={<Flame size={20} />} label="Streak" value={`${streak} days`} />
         <StatTile
           icon={<Droplet size={20} />}
           label="Water"

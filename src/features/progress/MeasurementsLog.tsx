@@ -14,8 +14,11 @@ export function MeasurementsLog() {
   const [upperArmCm, setUpperArmCm] = useState('')
   const [thighCm, setThighCm] = useState('')
 
+  const hasAnyInput = [waistCm, hipsCm, upperArmCm, thighCm].some((v) => v.trim() !== '')
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!hasAnyInput) return
     await logMeasurement({
       date: new Date().toISOString().slice(0, 10),
       waistCm: numberField(waistCm),
@@ -75,7 +78,11 @@ export function MeasurementsLog() {
             className="rounded border p-1"
           />
         </label>
-        <button type="submit" className="col-span-2 rounded bg-sage-500 p-2 text-sm text-white">
+        <button
+          type="submit"
+          disabled={!hasAnyInput}
+          className="col-span-2 rounded bg-sage-500 p-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
           Log measurements
         </button>
       </form>

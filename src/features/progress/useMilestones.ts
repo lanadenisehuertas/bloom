@@ -1,13 +1,40 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
 import { db } from '../../db'
-import { checkMilestones, computeStreak } from '../../domain/motivation'
+import { checkMilestones, MilestoneId } from '../../domain/motivation'
 import { useProfile } from '../../hooks/useProfile'
 
-const MILESTONE_LABELS: Record<string, string> = {
+const MILESTONE_LABELS: Record<MilestoneId, string> = {
   'first-full-pushup': 'First full push-up!',
   'first-full-week': 'First full week completed!',
   'halfway-to-checkpoint': 'Halfway to your checkpoint!',
+}
+
+// Direct check for 7 genuinely consecutive calendar dates with at least one workout log
+// each (any completion type). computeStreak is NOT used here: its caller contract requires
+// an explicit `{ completed: 'skipped' }` row for every day with no logged workout, but
+// nothing in this app ever writes those rows, so a gap of unlogged days between real
+// entries is invisible to it -- it would count 7 logged rows spread across weeks as a
+// "streak" of 7, which is not what "first full week" means.
+function hasSevenConsecutiveLoggedDays(logs: { date: string }[]): boolean {
+  const loggedDates = new Set(logs.map((l) => l.date))
+  if (loggedDates.size < 7) return false
+
+  const sortedDates = [...loggedDates].sort()
+  for (const startDate of sortedDates) {
+    let allPresent = true
+    const cursor = new Date(startDate)
+    for (let i = 0; i < 7; i++) {
+      const dateStr = cursor.toISOString().slice(0, 10)
+      if (!loggedDates.has(dateStr)) {
+        allPresent = false
+        break
+      }
+      cursor.setDate(cursor.getDate() + 1)
+    }
+    if (allPresent) return true
+  }
+  return false
 }
 
 export function useMilestones() {
@@ -20,14 +47,11 @@ export function useMilestones() {
     log.exercises.some((e) => e.name === 'Push-Up Progression' && e.hitTopOfRange === true)
   )
 
-  // Use 0 grace days here: this milestone is "a literal full week", not "a week that
-  // survived on grace days" — a distinct question from the app's day-to-day streak
-  // (which does use grace days, see useMotivationState.ts).
-  const firstFullWeekCompleted =
-    computeStreak(
-      workoutLogs.map((l) => ({ date: l.date, completed: l.completed })),
-      0
-    ) >= 7
+  // This milestone is "a literal full week", not "a week that survived on grace days" —
+  // a distinct question from the app's day-to-day streak (which does use grace days, see
+  // useMotivationState.ts). It requires 7 actually-consecutive calendar days each with a
+  // logged workout, not merely 7 logged rows with no gap in the array.
+  const firstFullWeekCompleted = hasSevenConsecutiveLoggedDays(workoutLogs)
 
   const currentWeightKg = [...dailyLogs].reverse().find((d) => d.weightKg != null)?.weightKg
   let halfwayToCheckpoint = false
@@ -35,6 +59,10 @@ export function useMilestones() {
     const target = profile.checkpointWeightKg ?? profile.goalWeightKg
     const start = profile.weightKg
     const totalDelta = target - start
+    // Deliberate guard, not an oversight: if the user's target already equals their
+    // starting weight (totalDelta === 0), there's no distance to be "halfway" across.
+    // They don't get this milestone -- there's currently no separate "reached your
+    // goal" milestone to award instead.
     if (totalDelta !== 0) {
       const progressDelta = currentWeightKg - start
       const fractionOfWay = progressDelta / totalDelta

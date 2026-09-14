@@ -40,6 +40,8 @@ export function computeStreak(days: DayCompletion[], graceDaysAvailable: number)
   return streak
 }
 
+export type MilestoneId = 'first-full-pushup' | 'first-full-week' | 'halfway-to-checkpoint'
+
 export interface MilestoneContext {
   firstFullPushupLogged: boolean
   firstFullWeekCompleted: boolean
@@ -47,8 +49,8 @@ export interface MilestoneContext {
   alreadyUnlocked: string[]
 }
 
-export function checkMilestones(ctx: MilestoneContext): string[] {
-  const candidates: [boolean, string][] = [
+export function checkMilestones(ctx: MilestoneContext): MilestoneId[] {
+  const candidates: [boolean, MilestoneId][] = [
     [ctx.firstFullPushupLogged, 'first-full-pushup'],
     [ctx.firstFullWeekCompleted, 'first-full-week'],
     [ctx.halfwayToCheckpoint, 'halfway-to-checkpoint'],

@@ -42,4 +42,25 @@ describe('useMilestones', () => {
     await waitFor(() => expect(result.current.milestones).toEqual([]))
     expect(result.current.milestones.map((m) => m.id)).not.toContain('first-full-week')
   })
+
+  it('does not unlock first-full-week when 7 logged rows exist but span non-consecutive dates', async () => {
+    // One log per week for 7 weeks: 7 rows with no gap in the array (so a naive
+    // computeStreak(...) >= 7 check would wrongly treat this as a streak), but none of
+    // them are actually consecutive calendar days.
+    await db.workoutLogs.bulkAdd([
+      { date: '2026-07-27', workoutDayId: 'A', exercises: [], completed: 'full' },
+      { date: '2026-08-03', workoutDayId: 'A', exercises: [], completed: 'full' },
+      { date: '2026-08-10', workoutDayId: 'A', exercises: [], completed: 'full' },
+      { date: '2026-08-17', workoutDayId: 'A', exercises: [], completed: 'full' },
+      { date: '2026-08-24', workoutDayId: 'A', exercises: [], completed: 'full' },
+      { date: '2026-08-31', workoutDayId: 'A', exercises: [], completed: 'full' },
+      { date: '2026-09-07', workoutDayId: 'A', exercises: [], completed: 'full' },
+    ])
+
+    const { result } = renderHook(() => useMilestones())
+
+    // give the effect a tick to (not) write
+    await waitFor(() => expect(result.current.milestones).toEqual([]))
+    expect(result.current.milestones.map((m) => m.id)).not.toContain('first-full-week')
+  })
 })

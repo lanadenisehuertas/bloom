@@ -23,4 +23,24 @@ describe('MeasurementsLog', () => {
 
     expect(await screen.findByText(/waist 80cm \/ hips 95cm \/ arm 30cm \/ thigh 55cm/i)).toBeInTheDocument()
   })
+
+  it('disables the submit button when all fields are empty', async () => {
+    render(<MeasurementsLog />)
+
+    expect(screen.getByRole('button', { name: /log measurements/i })).toBeDisabled()
+  })
+
+  it('enables the submit button once any field has input, and blocks submission otherwise', async () => {
+    const user = userEvent.setup()
+    render(<MeasurementsLog />)
+
+    const button = screen.getByRole('button', { name: /log measurements/i })
+    expect(button).toBeDisabled()
+
+    await user.type(screen.getByLabelText('Waist (cm)'), '80')
+    expect(button).not.toBeDisabled()
+
+    await user.clear(screen.getByLabelText('Waist (cm)'))
+    expect(button).toBeDisabled()
+  })
 })

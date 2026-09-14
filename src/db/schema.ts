@@ -31,10 +31,20 @@ export interface DailyLog {
 
 export interface CycleLog {
   id: 'default'
+  /** Derived from `periodDays` (first day of each contiguous run) — kept stored so
+   *  cycle math and older records that predate day-level logging both keep working. */
   periodStartDates: string[]
+  /** Every individual day she marked as bleeding, from the calendar. */
+  periodDays?: string[]
   avgCycleLength: number
+  /** Learned from her logged runs; falls back to 5 until a period has completed. */
+  avgPeriodLength?: number
   symptomsByDate: Record<string, string[]>
+  /** Set when she overrides the auto-detected phase; cleared when she reverts to auto. */
+  phaseOverride?: { date: string; phase: CyclePhaseName }
 }
+
+export type CyclePhaseName = 'menstrual' | 'follicular' | 'ovulation' | 'luteal'
 
 export interface WorkoutLogExercise {
   name: string

@@ -1,4 +1,4 @@
-import { CyclePhase, projectCyclePhase } from './cycle'
+import { CyclePhase, projectCyclePhase, DEFAULT_PERIOD_LENGTH } from './cycle'
 import { getScheduledDay, WorkoutDay } from '../data/workoutProgram'
 import { toLocalDateString } from '../lib/localDate'
 
@@ -47,9 +47,10 @@ export function buildWeekDays(params: {
   today: string
   lastPeriodStartDate?: string
   avgCycleLength?: number
+  avgPeriodLength?: number
   workoutLogsByDate: Map<string, 'full' | 'minimal' | 'skipped'>
 }): WeekDayInfo[] {
-  const { weekStart, today, lastPeriodStartDate, avgCycleLength, workoutLogsByDate } = params
+  const { weekStart, today, lastPeriodStartDate, avgCycleLength, avgPeriodLength, workoutLogsByDate } = params
   const days: WeekDayInfo[] = []
   const start = new Date(`${weekStart}T00:00:00`)
 
@@ -61,7 +62,7 @@ export function buildWeekDays(params: {
 
     const projectedPhase =
       lastPeriodStartDate != null
-        ? projectCyclePhase(lastPeriodStartDate, date, avgCycleLength ?? 28)
+        ? projectCyclePhase(lastPeriodStartDate, date, avgCycleLength ?? 28, avgPeriodLength ?? DEFAULT_PERIOD_LENGTH)
         : null
 
     days.push({

@@ -96,9 +96,10 @@ export function WeekView() {
         today,
         lastPeriodStartDate,
         avgCycleLength: cycleLog?.avgCycleLength,
+        avgPeriodLength: cycleLog?.avgPeriodLength,
         workoutLogsByDate,
       }),
-    [weekStart, today, lastPeriodStartDate, cycleLog?.avgCycleLength, workoutLogsByDate]
+    [weekStart, today, lastPeriodStartDate, cycleLog?.avgCycleLength, cycleLog?.avgPeriodLength, workoutLogsByDate]
   )
 
   const isCurrentWeek = weekStart === startOfWeek(today)

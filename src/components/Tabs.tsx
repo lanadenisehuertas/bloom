@@ -1,5 +1,6 @@
 export type Tab = { id: string; label: string }
 
+/** Pill switcher — cream track, dark active pill. */
 export function Tabs({
   tabs,
   activeId,
@@ -10,14 +11,14 @@ export function Tabs({
   onChange: (id: string) => void
 }) {
   return (
-    <div className="flex rounded-full bg-cream-100 p-1" role="tablist">
+    <div className="flex rounded-full bg-cream-deep p-1" role="tablist">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           role="tab"
           aria-selected={tab.id === activeId}
-          className={`min-h-[44px] flex-1 rounded-full px-3 text-sm font-medium transition-colors ${
-            tab.id === activeId ? 'bg-ink-900 text-cream-50' : 'text-ink-500'
+          className={`min-h-[44px] flex-1 rounded-full px-3 text-label font-bold transition-colors duration-200 ${
+            tab.id === activeId ? 'bg-ink-900 text-white' : 'text-ink-500'
           }`}
           onClick={() => onChange(tab.id)}
         >

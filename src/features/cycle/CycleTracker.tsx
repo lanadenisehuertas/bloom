@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CalendarHeart } from 'lucide-react'
-import { Card, Tone, TONE_MUTED } from '../../components/Card'
+import { Card } from '../../components/Card'
+import { Tone, TONE_MUTED } from '../../components/tones'
 import { Button } from '../../components/Button'
 import { Pill } from '../../components/Pill'
 import { StatTile } from '../../components/StatTile'

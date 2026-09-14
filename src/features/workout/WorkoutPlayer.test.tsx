@@ -82,10 +82,13 @@ describe('WorkoutPlayer', () => {
     await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-14'], avgCycleLength: 28, symptomsByDate: {} })
     render(<WorkoutPlayer />)
     await screen.findByText(/full permission/i)
+    // Scope to this exercise's own card rather than walking the DOM structure, so
+    // the assertion survives layout changes and only breaks if the maths breaks.
     const heading = await screen.findByRole('heading', { name: 'Dumbbell Bent-Over Row' })
-    const repsParagraph = heading.parentElement?.querySelector('p')
-    expect(repsParagraph?.textContent?.trim().startsWith('3 sets × 8')).toBe(true)
-    expect(repsParagraph).toHaveTextContent(/reduced ~30% for today's phase/i)
+    const card = heading.closest('div.rounded-block')
+    expect(card).not.toBeNull()
+    expect(card).toHaveTextContent('3 sets × 8')
+    expect(card).toHaveTextContent(/reduced ~30% for today's phase/i)
   })
 
   it('does not gate the completion buttons during the menstrual phase', async () => {

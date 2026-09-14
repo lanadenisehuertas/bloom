@@ -1,28 +1,10 @@
 import { useState, useMemo } from 'react'
 import { ArrowUpRight, Search } from 'lucide-react'
-import { Card, Tone } from '../../components/Card'
+import { Card } from '../../components/Card'
+import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_TONES } from '../../data/muscleGroups'
 import { Pill } from '../../components/Pill'
 import { EXERCISES } from '../../data/exercises'
 import { buildFormVideoLinks } from '../../domain/formVideos'
-
-const MUSCLE_GROUP_LABELS: Record<string, string> = {
-  glutes: 'Glutes',
-  upperBody: 'Upper Body',
-  core: 'Core',
-  legs: 'Legs',
-  cardio: 'Cardio',
-  mobility: 'Mobility',
-}
-
-/** One colour block per muscle group, so the list scans as colour before text. */
-const MUSCLE_GROUP_TONES: Record<string, Tone> = {
-  glutes: 'blush',
-  upperBody: 'sky',
-  core: 'lilac',
-  legs: 'mint',
-  cardio: 'coral',
-  mobility: 'sun',
-}
 
 export function ExerciseLibrary() {
   const [query, setQuery] = useState('')

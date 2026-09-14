@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
+import { Pill } from '../../components/Pill'
 import { db } from '../../db'
 import { ActivityLevel, Profile } from '../../db/schema'
 import { evaluateGoalPace, GoalPaceResult } from '../../domain/nutrition'
@@ -20,6 +21,47 @@ const DEFAULT_PROFILE_DRAFT = {
 }
 
 type Step = 'stats' | 'goal' | 'realistic-goal' | 'done'
+
+const inputClass =
+  'w-full min-h-[48px] rounded-chip border-2 border-cream-edge bg-white px-4 py-3 font-body text-[16px] font-medium'
+
+function Field({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string
+  label: string
+  hint?: string
+  children: ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-label font-bold" htmlFor={id}>
+        {label}
+      </label>
+      {children}
+      {hint && <p className="text-label text-ink-500">{hint}</p>}
+    </div>
+  )
+}
+
+function StepDots({ current }: { current: 1 | 2 }) {
+  return (
+    <div className="flex items-center gap-2" aria-label={`Step ${current} of 2`}>
+      {[1, 2].map((n) => (
+        <span
+          key={n}
+          aria-hidden="true"
+          className={`h-1.5 rounded-full transition-all duration-200 ${
+            n === current ? 'w-8 bg-ink-900' : 'w-4 bg-cream-edge'
+          }`}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function Onboarding() {
   const [step, setStep] = useState<Step>('stats')
@@ -41,80 +83,115 @@ export function Onboarding() {
 
   if (step === 'stats') {
     return (
-      <Card className="m-4 space-y-3">
-        <h1 className="text-xl font-semibold">Tell us about you</h1>
-        <p className="text-sm text-ink-500">
-          Pre-filled with your seeded profile — feel free to adjust the numbers below.
-        </p>
+      <div className="mx-auto w-full max-w-md space-y-4 p-4 pt-8">
+        <header className="space-y-3 px-1">
+          <Pill className="bg-blush text-ink-900">Welcome to Bloom</Pill>
+          <h1 className="font-display text-[34px] font-extrabold leading-[1.1]">
+            Tell us about you
+          </h1>
+          <StepDots current={1} />
+        </header>
 
-        <label className="block text-sm" htmlFor="heightCm">Height (cm)</label>
-        <input
-          id="heightCm"
-          type="number"
-          className="w-full rounded-2xl border border-cream-200 p-3"
-          value={draft.heightCm}
-          onChange={(e) => setDraft({ ...draft, heightCm: Number(e.target.value) })}
-        />
+        <Card className="space-y-4">
+          <p className="text-label text-ink-500">
+            Pre-filled to get you started — adjust anything that isn't right.
+          </p>
 
-        <label className="block text-sm" htmlFor="weightKg">Weight (kg)</label>
-        <input
-          id="weightKg"
-          type="number"
-          className="w-full rounded-2xl border border-cream-200 p-3"
-          value={draft.weightKg}
-          onChange={(e) => setDraft({ ...draft, weightKg: Number(e.target.value) })}
-        />
+          <Field id="heightCm" label="Height (cm)">
+            <input
+              id="heightCm"
+              type="number"
+              inputMode="numeric"
+              className={inputClass}
+              value={draft.heightCm}
+              onChange={(e) => setDraft({ ...draft, heightCm: Number(e.target.value) })}
+            />
+          </Field>
 
-        <label className="block text-sm" htmlFor="age">Age</label>
-        <input
-          id="age"
-          type="number"
-          className="w-full rounded-2xl border border-cream-200 p-3"
-          value={draft.age}
-          onChange={(e) => setDraft({ ...draft, age: Number(e.target.value) })}
-        />
+          <Field id="weightKg" label="Weight (kg)">
+            <input
+              id="weightKg"
+              type="number"
+              inputMode="decimal"
+              className={inputClass}
+              value={draft.weightKg}
+              onChange={(e) => setDraft({ ...draft, weightKg: Number(e.target.value) })}
+            />
+          </Field>
 
-        <label className="block text-sm" htmlFor="motivationReason">What are you working toward?</label>
-        <textarea
-          id="motivationReason"
-          className="w-full rounded-2xl border border-cream-200 p-3"
-          rows={2}
-          value={draft.motivationReason}
-          onChange={(e) => setDraft({ ...draft, motivationReason: e.target.value })}
-        />
+          <Field id="age" label="Age">
+            <input
+              id="age"
+              type="number"
+              inputMode="numeric"
+              className={inputClass}
+              value={draft.age}
+              onChange={(e) => setDraft({ ...draft, age: Number(e.target.value) })}
+            />
+          </Field>
 
-        <Button onClick={() => setStep('goal')}>Continue</Button>
-      </Card>
+          <Field
+            id="motivationReason"
+            label="What are you working toward?"
+            hint="This shows up on your home screen — make it yours."
+          >
+            <textarea
+              id="motivationReason"
+              className={inputClass}
+              rows={3}
+              value={draft.motivationReason}
+              onChange={(e) => setDraft({ ...draft, motivationReason: e.target.value })}
+            />
+          </Field>
+        </Card>
+
+        <Button className="w-full" onClick={() => setStep('goal')}>
+          Continue
+        </Button>
+      </div>
     )
   }
 
   if (step === 'goal') {
     return (
-      <Card className="m-4 space-y-3">
-        <h1 className="text-xl font-semibold">Your goal</h1>
-        <p className="text-sm text-ink-500">
-          Adjust your goal weight and target date below.
-        </p>
+      <div className="mx-auto w-full max-w-md space-y-4 p-4 pt-8">
+        <header className="space-y-3 px-1">
+          <Pill className="bg-sun text-ink-900">Your goal</Pill>
+          <h1 className="font-display text-[34px] font-extrabold leading-[1.1]">
+            What are you aiming for?
+          </h1>
+          <StepDots current={2} />
+        </header>
 
-        <label className="block text-sm" htmlFor="goalWeightKg">Goal weight (kg)</label>
-        <input
-          id="goalWeightKg"
-          type="number"
-          className="w-full rounded-2xl border border-cream-200 p-3"
-          value={draft.goalWeightKg}
-          onChange={(e) => setDraft({ ...draft, goalWeightKg: Number(e.target.value) })}
-        />
+        <Card className="space-y-4">
+          <Field id="goalWeightKg" label="Goal weight (kg)">
+            <input
+              id="goalWeightKg"
+              type="number"
+              inputMode="decimal"
+              className={inputClass}
+              value={draft.goalWeightKg}
+              onChange={(e) => setDraft({ ...draft, goalWeightKg: Number(e.target.value) })}
+            />
+          </Field>
 
-        <label className="block text-sm" htmlFor="goalDate">Goal date</label>
-        <input
-          id="goalDate"
-          type="date"
-          className="w-full rounded-2xl border border-cream-200 p-3"
-          value={draft.goalDate}
-          onChange={(e) => setDraft({ ...draft, goalDate: e.target.value })}
-        />
+          <Field
+            id="goalDate"
+            label="Goal date"
+            hint="We'll check this is a safe pace before locking it in."
+          >
+            <input
+              id="goalDate"
+              type="date"
+              className={inputClass}
+              value={draft.goalDate}
+              onChange={(e) => setDraft({ ...draft, goalDate: e.target.value })}
+            />
+          </Field>
+        </Card>
 
         <Button
+          className="w-full"
           onClick={() => {
             const result = evaluateGoalPace({
               startWeightKg: draft.weightKg,
@@ -132,13 +209,13 @@ export function Onboarding() {
         >
           Continue
         </Button>
-      </Card>
+      </div>
     )
   }
 
   if (step === 'realistic-goal' && paceResult) {
     return (
-      <div className="m-4">
+      <div className="mx-auto w-full max-w-md p-4 pt-8">
         <RealisticGoalScreen
           result={paceResult}
           goalDate={draft.goalDate}

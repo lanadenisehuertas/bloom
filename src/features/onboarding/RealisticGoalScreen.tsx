@@ -1,5 +1,8 @@
 import { Card } from '../../components/Card'
+import { TONE_MUTED } from '../../components/tones'
 import { Button } from '../../components/Button'
+import { Pill } from '../../components/Pill'
+import { Sparkles } from 'lucide-react'
 import { GoalPaceResult } from '../../domain/nutrition'
 
 export function RealisticGoalScreen({
@@ -14,29 +17,58 @@ export function RealisticGoalScreen({
   onOverride: () => void
 }) {
   return (
-    <Card className="space-y-4">
-      <h2 className="text-xl font-semibold text-ink-900">Let's set a realistic pace</h2>
-      <p className="text-ink-700">
-        Reaching your goal weight by {goalDate} would mean losing about{' '}
-        {result.requiredWeeklyLossKg.toFixed(1)}kg/week — faster than what's safe for muscle and
-        hormonal health (up to {result.safeWeeklyCapKg.toFixed(1)}kg/week).
-      </p>
-      <p className="text-ink-700">
-        Good news: recomposition changes how you <em>look</em> — your shape — faster than the
-        scale moves. Here's an honest plan:
-      </p>
-      <div className="rounded-2xl bg-sage-50 p-4">
-        <p className="font-medium text-sage-700">
-          Checkpoint by {goalDate}: ~{result.checkpointWeightKg}kg
+    <div className="space-y-4">
+      <Card tone="forest">
+        <Pill className="bg-white/20 text-white">
+          <Sparkles size={13} aria-hidden="true" />
+          Good news
+        </Pill>
+
+        {/* Only one element on this screen may match /realistic/i — a test asserts a
+            single match. Keep alternative wording elsewhere. */}
+        <h2 className="mt-3 font-display text-[30px] font-extrabold leading-[1.12]">
+          Let's set a realistic pace
+        </h2>
+
+        <p className={`mt-3 text-[15px] leading-relaxed ${TONE_MUTED.forest}`}>
+          Hitting your goal by {goalDate} would mean losing about{' '}
+          <strong className="font-bold text-white">{result.requiredWeeklyLossKg.toFixed(1)}kg a week</strong> —
+          faster than is safe for your muscle and hormonal health (the safe ceiling is{' '}
+          {result.safeWeeklyCapKg.toFixed(1)}kg/week).
         </p>
-        <p className="text-sm text-ink-500">Full goal, at a safe pace, by: {result.recommendedGoalDate}</p>
-      </div>
-      <div className="flex gap-2">
-        <Button onClick={onAcceptCheckpoint}>Use this plan</Button>
-        <Button variant="ghost" onClick={onOverride}>
+
+        <p className={`mt-3 text-[15px] leading-relaxed ${TONE_MUTED.forest}`}>
+          Your <em>shape</em> changes faster than the scale does. You'll see the difference
+          in the mirror well before you see it in a number.
+        </p>
+      </Card>
+
+      <Card tone="sun">
+        <Pill className="bg-ink-900/10">Your checkpoint</Pill>
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="numerals font-display text-numeral font-extrabold">
+            {result.checkpointWeightKg}
+          </span>
+          <span className="font-display text-2xl font-extrabold">kg</span>
+        </div>
+        <p className={`text-label font-bold ${TONE_MUTED.sun}`}>by {goalDate}</p>
+
+        <div className="mt-4 rounded-chip bg-ink-900/10 p-3">
+          <p className="text-label font-medium">
+            Full goal, at a safe pace, by{' '}
+            <strong className="font-bold">{result.recommendedGoalDate}</strong>
+          </p>
+        </div>
+      </Card>
+
+      <div className="space-y-2">
+        <Button className="w-full" onClick={onAcceptCheckpoint}>
+          Use this plan
+        </Button>
+        <Button variant="ghost" className="w-full" onClick={onOverride}>
           Keep my original goal anyway
         </Button>
       </div>
-    </Card>
+    </div>
   )
 }

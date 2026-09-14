@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Check, Flame } from 'lucide-react'
-import { Card, TONE_MUTED } from '../../components/Card'
+import { Card } from '../../components/Card'
+import { TONE_MUTED } from '../../components/tones'
 import { Button } from '../../components/Button'
 import { Pill } from '../../components/Pill'
 import { RECIPES, Recipe } from '../../data/recipes'

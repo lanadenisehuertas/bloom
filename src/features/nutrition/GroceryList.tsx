@@ -1,6 +1,7 @@
 import { Recipe } from '../../data/recipes'
 import { generateGroceryList } from '../../domain/groceryList'
-import { Card, Tone, TONE_MUTED } from '../../components/Card'
+import { Card } from '../../components/Card'
+import { Tone, TONE_MUTED } from '../../components/tones'
 import { Pill } from '../../components/Pill'
 
 const CATEGORY_LABELS: Record<string, string> = {

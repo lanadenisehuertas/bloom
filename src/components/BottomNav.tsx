@@ -4,16 +4,17 @@ import { Home, Dumbbell, Apple, CalendarHeart, LineChart, Settings } from 'lucid
 const items = [
   { to: '/', label: 'Today', icon: Home },
   { to: '/workout', label: 'Workout', icon: Dumbbell },
-  { to: '/nutrition', label: 'Nutrition', icon: Apple },
+  { to: '/nutrition', label: 'Food', icon: Apple },
   { to: '/cycle', label: 'Cycle', icon: CalendarHeart },
   { to: '/progress', label: 'Progress', icon: LineChart },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/settings', label: 'You', icon: Settings },
 ]
 
 export function BottomNav() {
   return (
     <nav
-      className="flex justify-around border-t border-cream-200 bg-white/95 pt-1"
+      aria-label="Primary"
+      className="flex justify-between gap-0.5 rounded-t-block bg-ink-900 px-2 pt-2"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}
     >
       {items.map(({ to, label, icon: Icon }) => (
@@ -22,13 +23,17 @@ export function BottomNav() {
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            `flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 px-2 text-xs ${
-              isActive ? 'text-sage-700' : 'text-ink-300'
+            `flex min-h-[48px] flex-1 flex-col items-center justify-center gap-1 rounded-chip px-1 py-1.5 text-[10px] font-bold transition-colors duration-200 ${
+              isActive ? 'bg-sun text-ink-900' : 'text-white/70 active:text-white'
             }`
           }
         >
-          <Icon size={20} />
-          {label}
+          {({ isActive }) => (
+            <>
+              <Icon size={19} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
+              {label}
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

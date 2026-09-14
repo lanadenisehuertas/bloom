@@ -1,12 +1,29 @@
 import { ReactNode } from 'react'
 import { Card } from './Card'
+import { Tone, TONE_MUTED } from './tones'
 
-export function StatTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+/**
+ * Big-numeral stat block. The value is the focal point — it is deliberately
+ * much larger than its label, which is how this design carries hierarchy.
+ */
+export function StatTile({
+  icon,
+  label,
+  value,
+  tone = 'white',
+  className = '',
+}: {
+  icon?: ReactNode
+  label: string
+  value: string
+  tone?: Tone
+  className?: string
+}) {
   return (
-    <Card className="flex flex-col items-center gap-1 text-center">
-      <div className="text-sage-500">{icon}</div>
-      <div className="text-lg font-semibold text-ink-900">{value}</div>
-      <div className="text-xs text-ink-500">{label}</div>
+    <Card tone={tone} className={`flex flex-col gap-1 ${className}`}>
+      {icon && <div aria-hidden="true" className="mb-1">{icon}</div>}
+      <div className="numerals font-display text-numeral-sm font-extrabold">{value}</div>
+      <div className={`text-label font-medium ${TONE_MUTED[tone]}`}>{label}</div>
     </Card>
   )
 }

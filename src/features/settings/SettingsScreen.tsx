@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react'
+import { Download, Upload, RefreshCcw } from 'lucide-react'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
+import { Pill } from '../../components/Pill'
+import { TONE_MUTED } from '../../components/tones'
 import { exportData, importData } from '../../db/backup'
 import { db } from '../../db'
 import { Profile } from '../../db/schema'
@@ -12,6 +15,9 @@ import { rollingAverage } from '../../domain/stats'
 import { RealisticGoalScreen } from '../onboarding/RealisticGoalScreen'
 
 type ProfileDraft = Pick<Profile, 'heightCm' | 'weightKg' | 'age' | 'goalWeightKg' | 'goalDate' | 'motivationReason'>
+
+const inputClass = 'mt-1 w-full min-h-[48px] rounded-chip border-2 border-cream-edge bg-white px-4 py-3 text-[16px] text-ink-900'
+const labelClass = 'block text-label font-medium'
 
 function draftFromProfile(profile: Profile): ProfileDraft {
   return {
@@ -152,77 +158,103 @@ export function SettingsScreen() {
   }
 
   return (
-    <div className="space-y-3">
-      <Card className="space-y-2">
-        <h3 className="font-medium">Profile</h3>
-        <p className="text-sm text-ink-500">
-          {profile ? `${profile.weightKg}kg → ${profile.goalWeightKg}kg by ${profile.goalDate}` : 'No profile yet'}
+    <div className="space-y-4">
+      <header className="px-1">
+        <p className="text-label font-medium text-ink-500">Account</p>
+        <h1 className="font-display text-3xl font-extrabold leading-tight">You</h1>
+      </header>
+
+      <Card tone="lilac" className="space-y-3">
+        <Pill className="bg-ink-900/10">Profile</Pill>
+        <p className="font-display text-xl font-extrabold leading-snug">
+          {profile ? (
+            <>
+              <span className="numerals">{profile.weightKg}kg</span> {'→'}{' '}
+              <span className="numerals">{profile.goalWeightKg}kg</span> by {profile.goalDate}
+            </>
+          ) : (
+            'No profile yet'
+          )}
         </p>
         {!isEditing && profile && (
-          <Button variant="secondary" onClick={startEditing}>
+          <Button variant="onColor" onClick={startEditing}>
             Edit profile
           </Button>
         )}
 
         {isEditing && draft && !pendingUnsafePace && (
-          <div className="space-y-2">
-            <label className="block text-sm" htmlFor="edit-heightCm">Height (cm)</label>
-            <input
-              id="edit-heightCm"
-              type="number"
-              className="w-full rounded-2xl border border-cream-200 p-3"
-              value={draft.heightCm}
-              onChange={(e) => setDraft({ ...draft, heightCm: Number(e.target.value) })}
-            />
+          <div className="space-y-3">
+            <label className={labelClass} htmlFor="edit-heightCm">
+              Height (cm)
+              <input
+                id="edit-heightCm"
+                type="number"
+                className={inputClass}
+                value={draft.heightCm}
+                onChange={(e) => setDraft({ ...draft, heightCm: Number(e.target.value) })}
+              />
+            </label>
 
-            <label className="block text-sm" htmlFor="edit-weightKg">Weight (kg)</label>
-            <input
-              id="edit-weightKg"
-              type="number"
-              className="w-full rounded-2xl border border-cream-200 p-3"
-              value={draft.weightKg}
-              onChange={(e) => setDraft({ ...draft, weightKg: Number(e.target.value) })}
-            />
+            <label className={labelClass} htmlFor="edit-weightKg">
+              Weight (kg)
+              <input
+                id="edit-weightKg"
+                type="number"
+                className={inputClass}
+                value={draft.weightKg}
+                onChange={(e) => setDraft({ ...draft, weightKg: Number(e.target.value) })}
+              />
+            </label>
 
-            <label className="block text-sm" htmlFor="edit-age">Age</label>
-            <input
-              id="edit-age"
-              type="number"
-              className="w-full rounded-2xl border border-cream-200 p-3"
-              value={draft.age}
-              onChange={(e) => setDraft({ ...draft, age: Number(e.target.value) })}
-            />
+            <label className={labelClass} htmlFor="edit-age">
+              Age
+              <input
+                id="edit-age"
+                type="number"
+                className={inputClass}
+                value={draft.age}
+                onChange={(e) => setDraft({ ...draft, age: Number(e.target.value) })}
+              />
+            </label>
 
-            <label className="block text-sm" htmlFor="edit-goalWeightKg">Goal weight (kg)</label>
-            <input
-              id="edit-goalWeightKg"
-              type="number"
-              className="w-full rounded-2xl border border-cream-200 p-3"
-              value={draft.goalWeightKg}
-              onChange={(e) => setDraft({ ...draft, goalWeightKg: Number(e.target.value) })}
-            />
+            <label className={labelClass} htmlFor="edit-goalWeightKg">
+              Goal weight (kg)
+              <input
+                id="edit-goalWeightKg"
+                type="number"
+                className={inputClass}
+                value={draft.goalWeightKg}
+                onChange={(e) => setDraft({ ...draft, goalWeightKg: Number(e.target.value) })}
+              />
+            </label>
 
-            <label className="block text-sm" htmlFor="edit-goalDate">Goal date</label>
-            <input
-              id="edit-goalDate"
-              type="date"
-              className="w-full rounded-2xl border border-cream-200 p-3"
-              value={draft.goalDate}
-              onChange={(e) => setDraft({ ...draft, goalDate: e.target.value })}
-            />
+            <label className={labelClass} htmlFor="edit-goalDate">
+              Goal date
+              <input
+                id="edit-goalDate"
+                type="date"
+                className={inputClass}
+                value={draft.goalDate}
+                onChange={(e) => setDraft({ ...draft, goalDate: e.target.value })}
+              />
+            </label>
 
-            <label className="block text-sm" htmlFor="edit-motivationReason">What are you working toward?</label>
-            <textarea
-              id="edit-motivationReason"
-              className="w-full rounded-2xl border border-cream-200 p-3"
-              rows={2}
-              value={draft.motivationReason}
-              onChange={(e) => setDraft({ ...draft, motivationReason: e.target.value })}
-            />
+            <label className={labelClass} htmlFor="edit-motivationReason">
+              What are you working toward?
+              <textarea
+                id="edit-motivationReason"
+                className={inputClass}
+                rows={2}
+                value={draft.motivationReason}
+                onChange={(e) => setDraft({ ...draft, motivationReason: e.target.value })}
+              />
+            </label>
 
-            <div className="flex gap-2">
-              <Button onClick={handleSaveChanges}>Save changes</Button>
-              <Button variant="ghost" onClick={cancelEditing}>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="onColor" onClick={handleSaveChanges}>
+                Save changes
+              </Button>
+              <Button variant="secondary" onClick={cancelEditing}>
                 Cancel
               </Button>
             </div>
@@ -239,36 +271,55 @@ export function SettingsScreen() {
         )}
       </Card>
 
-      <Card className="space-y-2">
-        <h3 className="font-medium">Goals</h3>
-        <p className="text-xs text-ink-500">
-          Current targets: {settings.currentCalorieTarget} kcal/day, {settings.currentProteinTarget}g protein/day.
-          Last recalculated {settings.lastRecalcDate}.
+      <Card tone="sun" className="space-y-3">
+        <Pill className="bg-ink-900/10">Goals</Pill>
+        <div className="flex items-baseline gap-2">
+          <span className="numerals font-display text-numeral-sm font-extrabold">
+            {settings.currentCalorieTarget}
+          </span>
+          <span className="font-body text-[15px] font-bold">kcal/day</span>
+        </div>
+        <p className={`text-label font-medium ${TONE_MUTED.sun}`}>
+          <span className="numerals font-bold">{settings.currentProteinTarget}g</span> protein/day · last
+          recalculated {settings.lastRecalcDate}
         </p>
-        <Button variant="secondary" onClick={handleRecalculate}>
+        <Button variant="onColor" onClick={handleRecalculate}>
+          <RefreshCcw size={16} aria-hidden="true" className="mr-2" />
           Recalculate goals
         </Button>
-        {recalcMessage && <p className="text-xs text-sage-700">{recalcMessage}</p>}
-        {recalcNote && <p className="text-xs text-clay-700">{recalcNote}</p>}
+        {recalcMessage && (
+          <p className="rounded-chip bg-ink-900/10 p-3 text-label font-medium">{recalcMessage}</p>
+        )}
+        {recalcNote && <p className="rounded-chip bg-ink-900/10 p-3 text-label font-medium">{recalcNote}</p>}
       </Card>
 
-      <Card className="space-y-2">
-        <h3 className="font-medium">Backup</h3>
-        <p className="text-xs text-ink-500">
+      <Card className="space-y-3">
+        <h3 className="font-display text-lg font-bold">Backup</h3>
+        <p className="text-label font-medium text-ink-500">
           Your data lives only on this device. Export it monthly so nothing is lost if this phone's storage is
           ever cleared.
         </p>
-        <Button onClick={handleExport}>Export my data</Button>
-        <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-          Import data
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={handleExport}>
+            <Download size={16} aria-hidden="true" className="mr-2" />
+            Export my data
+          </Button>
+          <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            <Upload size={16} aria-hidden="true" className="mr-2" />
+            Import data
+          </Button>
+        </div>
         <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImport} />
         {importError && (
-          <p role="alert" className="text-xs text-red-600">
+          <p role="alert" className="rounded-chip bg-rose p-3 text-label text-white">
             {importError}
           </p>
         )}
       </Card>
+
+      <p className="px-1 text-center text-label font-medium text-ink-500">
+        Your data is stored only on this device — nothing is sent to a server.
+      </p>
     </div>
   )
 }

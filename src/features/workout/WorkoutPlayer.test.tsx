@@ -72,6 +72,20 @@ describe('WorkoutPlayer', () => {
     expect(await screen.findByText(/highest-capacity week/i)).toBeInTheDocument()
   })
 
+  // 2026-09-16 is a Wednesday -> workout day 'B', which has db-bent-over-row at a
+  // plain-integer 12 reps. currentCycleDay('2026-09-14', '2026-09-16') = floor(2 days) + 1
+  // = 3 -> menstrual (cycleDay <= 5), so reps should be reduced: round(12 * (1 - 30/100)) = 8.
+  it('actually reduces a plain-integer rep count during the menstrual phase', async () => {
+    vi.setSystemTime(new Date('2026-09-16T09:00:00'))
+    await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-14'], avgCycleLength: 28, symptomsByDate: {} })
+    render(<WorkoutPlayer />)
+    await screen.findByText(/full permission/i)
+    const heading = await screen.findByRole('heading', { name: 'Dumbbell Bent-Over Row' })
+    const repsParagraph = heading.parentElement?.querySelector('p')
+    expect(repsParagraph?.textContent?.trim().startsWith('3 sets × 8')).toBe(true)
+    expect(repsParagraph).toHaveTextContent(/reduced ~30% for today's phase/i)
+  })
+
   it('does not gate the completion buttons during the menstrual phase', async () => {
     await db.cycleLog.put({ id: 'default', periodStartDates: ['2026-09-10'], avgCycleLength: 28, symptomsByDate: {} })
     render(<WorkoutPlayer />)

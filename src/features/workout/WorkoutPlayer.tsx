@@ -67,6 +67,15 @@ export function WorkoutPlayer() {
         </Card>
       )}
 
+      {modifier?.lowerBarMessage &&
+        !modifier.suggestSwapToRecovery &&
+        !modifier.testDay &&
+        !modifier.nudgeProgressiveOverload && (
+          <Card>
+            <p className="text-sm text-ink-700">{modifier.lowerBarMessage}</p>
+          </Card>
+        )}
+
       {day.exercises.map((programExercise) => {
         const exercise = getExercise(programExercise.exerciseId)
         const videoLinks = buildFormVideoLinks(exercise.name)
@@ -81,6 +90,9 @@ export function WorkoutPlayer() {
             <h3 className="font-medium">{exercise.name}</h3>
             <p className="text-sm text-ink-500">
               {programExercise.sets} sets × {displayedReps}
+              {repReductionPct > 0 && isPlainNumberReps && (
+                <span className="text-xs text-clay-700"> (reduced ~{repReductionPct}% for today's phase)</span>
+              )}
             </p>
             {repReductionPct > 0 && !isPlainNumberReps && (
               <p className="text-xs text-clay-700">

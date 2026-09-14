@@ -24,10 +24,15 @@ input, select, textarea {
   color: theme('colors.ink.900');
 }
 
-/* Visible focus for keyboard users only — never remove the ring */
+/* Visible focus for keyboard users only — never remove the ring.
+   Dual-tone on purpose: a single dark ring vanishes against dark blocks
+   (forest/rose/ink) and a single light ring vanishes against cream. With a white
+   ring wrapped in an ink ring, at least one of the two always clears 3:1 against
+   whatever is behind it. */
 :focus-visible {
-  outline: 3px solid theme('colors.ink.900');
+  outline: 3px solid #ffffff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 6px theme('colors.ink.900');
   border-radius: 4px;
 }
 

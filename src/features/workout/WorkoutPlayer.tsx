@@ -141,7 +141,7 @@ export function WorkoutPlayer() {
   }
 
   return (
-    <div className="space-y-4 pb-40">
+    <div className="space-y-4 pb-52">
       <header className="px-1">
         <p className="numerals text-label font-medium text-ink-500">
           {day.durationMinutes} min · {day.exercises.length} exercises
@@ -355,7 +355,7 @@ export function WorkoutPlayer() {
           opaque band. */}
       <div className="pointer-events-none fixed inset-x-0 bottom-[4.25rem] z-30">
         <div className="h-6 bg-gradient-to-t from-cream to-transparent" />
-        <div className="pointer-events-auto bg-cream px-4 pb-1">
+        <div className="pointer-events-auto space-y-1 bg-cream px-4 pb-4">
           <Button variant="primary" className="w-full" onClick={() => complete('full')}>
             Complete workout
           </Button>

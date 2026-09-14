@@ -74,7 +74,7 @@ export function NutritionScreen() {
   }
 
   return (
-    <div className="space-y-4 pb-32">
+    <div className="space-y-4 pb-40">
       <header className="px-1">
         <p className="text-label font-medium text-ink-500">Today</p>
         <h1 className="font-display text-3xl font-extrabold leading-tight">Food</h1>

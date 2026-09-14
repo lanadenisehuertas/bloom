@@ -95,22 +95,21 @@ export function MeasurementsLog() {
       {sorted.length > 0 && (
         <ul className="space-y-2">
           {sorted.map((m) => (
-            <li
-              key={m.date}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-chip bg-cream-deep px-3 py-2"
-            >
-              <span className="text-label font-bold">{m.date}</span>
-              <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
-                waist {m.waistCm}cm
-              </span>
-              <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
-                hips {m.hipsCm}cm
-              </span>
-              <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
-                arm {m.upperArmCm}cm
-              </span>
-              <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
-                thigh {m.thighCm}cm
+            <li key={m.date} className="space-y-1.5 rounded-chip bg-cream-deep px-3 py-2.5">
+              <span className="block text-label font-bold">{m.date}</span>
+              <span className="flex flex-wrap gap-1.5">
+                <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
+                  waist {m.waistCm}cm
+                </span>
+                <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
+                  hips {m.hipsCm}cm
+                </span>
+                <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
+                  arm {m.upperArmCm}cm
+                </span>
+                <span className="numerals rounded-full bg-white px-2 py-0.5 text-micro font-bold">
+                  thigh {m.thighCm}cm
+                </span>
               </span>
               {/* Kept for tests/screen readers: the original single-line summary text. */}
               <span className="sr-only">

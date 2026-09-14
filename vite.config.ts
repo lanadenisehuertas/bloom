@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png', 'favicon.ico'],
+      includeAssets: ['apple-touch-icon.png', 'favicon-32.png'],
       manifest: {
         name: 'Bloom — Cycle-Synced Coach',
         short_name: 'Bloom',

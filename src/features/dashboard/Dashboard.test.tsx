@@ -1,0 +1,56 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, it, expect, beforeEach } from 'vitest'
+import 'fake-indexeddb/auto'
+import { MemoryRouter } from 'react-router-dom'
+import { db } from '../../db'
+import { Dashboard } from './Dashboard'
+
+describe('Dashboard', () => {
+  beforeEach(async () => {
+    await db.delete()
+    await db.open()
+    await db.profile.put({
+      id: 'default', heightCm: 175, weightKg: 80, age: 21, activityLevel: 'lightlyActive',
+      goalWeightKg: 74, goalDate: '2026-10-31', equipment: [], injuryNotes: '', createdAt: '2026-09-14',
+    })
+  })
+
+  it("shows today's scheduled workout title and the streak count", async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByText(/streak/i)).toBeInTheDocument()
+  })
+
+  it("shows the profile's own motivation reason instead of a generic slogan when one is set", async () => {
+    await db.profile.update('default', { motivationReason: 'Feeling strong enough to hike with my sister again.' })
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByText(/hike with my sister/i)).toBeInTheDocument()
+  })
+
+  it('links to the exercise library', async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(await screen.findByRole('link', { name: /exercise library/i })).toHaveAttribute('href', '/exercises')
+  })
+
+  it('opens the weekly check-in modal', async () => {
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    await userEvent.click(await screen.findByRole('button', { name: /weekly check-in/i }))
+    expect(await screen.findByText(/weekly reflection/i)).toBeInTheDocument()
+  })
+})

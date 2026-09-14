@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowUpRight, Sparkles, TrendingUp, HeartPulse } from 'lucide-react'
+import { ArrowUpRight, Sparkles, TrendingUp, HeartPulse, CheckCircle2 } from 'lucide-react'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
 import { Pill } from '../../components/Pill'
@@ -53,6 +53,11 @@ export function WorkoutPlayer() {
   const [readyToLevelUp, setReadyToLevelUp] = useState(false)
 
   const pushupLevel = settings.pushupLevel ?? PUSHUP_PROGRESSION[0]
+  // Matches the date convention logWorkout writes with below (and the one
+  // dailyLogs/useTodayLog already use) — a plain UTC date string, not the local
+  // one newer tables use, so "today's log" actually matches what was just saved.
+  const todayIso = new Date().toISOString().slice(0, 10)
+  const todaysLog = logs.find((l) => l.date === todayIso)
 
   async function complete(completion: 'full' | 'minimal') {
     const overloadCandidates: string[] = []
@@ -148,6 +153,23 @@ export function WorkoutPlayer() {
         </p>
         <h1 className="font-display text-3xl font-extrabold leading-tight">{day.title}</h1>
       </header>
+
+      {/* Unconditional confirmation — logging a workout should always be visibly
+          acknowledged, not just silently written to the database. The suggestion
+          cards below are conditional (rep ceiling, level-up); this isn't. */}
+      {todaysLog && (
+        <Card tone="mint">
+          <Pill className="bg-ink-900/10">
+            <CheckCircle2 size={13} aria-hidden="true" />
+            Logged for today
+          </Pill>
+          <p className="mt-2 font-body text-[15px] font-medium leading-snug">
+            {todaysLog.completed === 'full'
+              ? "Nice work — today's full session is saved."
+              : 'Saved as a Minimum Viable Day — showing up counts.'}
+          </p>
+        </Card>
+      )}
 
       {jointPainFlagged && (
         <Card tone="lilac">
@@ -357,7 +379,7 @@ export function WorkoutPlayer() {
         <div className="h-6 bg-gradient-to-t from-cream to-transparent" />
         <div className="pointer-events-auto space-y-1 bg-cream px-4 pb-4">
           <Button variant="primary" className="w-full" onClick={() => complete('full')}>
-            Complete workout
+            {todaysLog ? 'Log full session again' : 'Complete workout'}
           </Button>
           {/* Low-friction escape hatch — deliberately quieter than the primary, but
               never hidden: this is the anti-all-or-nothing feature. */}

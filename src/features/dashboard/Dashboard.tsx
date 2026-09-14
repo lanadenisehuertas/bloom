@@ -6,10 +6,11 @@ import { Button } from '../../components/Button'
 import { StatTile } from '../../components/StatTile'
 import { Pill } from '../../components/Pill'
 import { Modal } from '../../components/Modal'
-import { Flame, Droplet, ArrowUpRight, Dumbbell, Sparkles, Plus, ClipboardCheck, CalendarDays } from 'lucide-react'
+import { Flame, Droplet, ArrowUpRight, Dumbbell, Sparkles, Plus, ClipboardCheck, CalendarDays, CheckCircle2 } from 'lucide-react'
 import { useProfile } from '../../hooks/useProfile'
 import { useTodayLog } from '../../hooks/useTodayLog'
 import { useCycle } from '../../hooks/useCycle'
+import { useWorkoutLog } from '../../hooks/useWorkoutLog'
 import { getScheduledDay } from '../../data/workoutProgram'
 import { applyCyclePhaseModifier } from '../../domain/workoutProgram'
 import { WeeklyCheckin } from '../checkin/WeeklyCheckin'
@@ -19,8 +20,9 @@ const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday
 
 export function Dashboard() {
   const { profile } = useProfile()
-  const { log, updateToday } = useTodayLog()
+  const { log, updateToday, date: todayIso } = useTodayLog()
   const { phase } = useCycle()
+  const { logs: workoutLogs } = useWorkoutLog()
   const { streak, downshiftRecommended } = useMotivationState()
   const [showCheckin, setShowCheckin] = useState(false)
 
@@ -29,6 +31,7 @@ export function Dashboard() {
   const todaysDay = getScheduledDay(today.getDay())
   const modifier = phase ? applyCyclePhaseModifier(todaysDay, phase) : null
   const water = log?.waterCount ?? 0
+  const todaysWorkoutLog = workoutLogs.find((l) => l.date === todayIso)
 
   return (
     <div className="space-y-4">
@@ -54,9 +57,18 @@ export function Dashboard() {
 
       {/* Hero: the one thing that matters today */}
       <Card tone="forest" className="relative overflow-hidden">
-        <Pill className="bg-white/20 text-white">
-          <Dumbbell size={13} aria-hidden="true" />
-          {isRestDay ? 'Rest day' : "Today's plan"}
+        <Pill className={todaysWorkoutLog ? 'bg-mint text-ink-900' : 'bg-white/20 text-white'}>
+          {todaysWorkoutLog ? (
+            <>
+              <CheckCircle2 size={13} aria-hidden="true" />
+              {todaysWorkoutLog.completed === 'full' ? 'Done for today' : 'Logged — Minimum Viable Day'}
+            </>
+          ) : (
+            <>
+              <Dumbbell size={13} aria-hidden="true" />
+              {isRestDay ? 'Rest day' : "Today's plan"}
+            </>
+          )}
         </Pill>
         <h2 className="mt-3 font-display text-[32px] font-extrabold leading-[1.1]">
           {todaysDay.title}
@@ -74,7 +86,7 @@ export function Dashboard() {
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Link to="/workout">
             <Button variant="onColor">
-              {isRestDay ? 'View today' : 'Start workout'}
+              {todaysWorkoutLog ? 'View workout' : isRestDay ? 'View today' : 'Start workout'}
             </Button>
           </Link>
           <Link

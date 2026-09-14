@@ -28,11 +28,21 @@ describe('WorkoutPlayer', () => {
     expect(logs[0].completed).toBe('full')
   })
 
+  it('visibly confirms the completion instead of silently saving it', async () => {
+    render(<WorkoutPlayer />)
+    expect(screen.queryByText(/logged for today/i)).not.toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: /complete workout/i }))
+    expect(await screen.findByText(/logged for today/i)).toBeInTheDocument()
+    expect(screen.getByText(/full session is saved/i)).toBeInTheDocument()
+  })
+
   it('logs a minimal completion via the Minimum Viable Day button without penalty copy', async () => {
     render(<WorkoutPlayer />)
     await userEvent.click(await screen.findByRole('button', { name: /minimum viable day/i }))
     const logs = await db.workoutLogs.toArray()
     expect(logs[0].completed).toBe('minimal')
+    expect(await screen.findByText(/logged for today/i)).toBeInTheDocument()
+    expect(screen.getByText(/showing up counts/i)).toBeInTheDocument()
   })
 
   it('gives every exercise a form-video search link instead of on-device form checking', async () => {

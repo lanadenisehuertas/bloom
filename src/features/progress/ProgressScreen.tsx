@@ -6,15 +6,9 @@ import { Card } from '../../components/Card'
 import { PhotoCompare } from './PhotoCompare'
 import { MeasurementsLog } from './MeasurementsLog'
 import { useMilestones } from './useMilestones'
+import { rollingAverage } from '../../domain/stats'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip)
-
-function rollingAverage(values: number[], windowSize: number): number[] {
-  return values.map((_, i) => {
-    const window = values.slice(Math.max(0, i - windowSize + 1), i + 1)
-    return window.reduce((a, b) => a + b, 0) / window.length
-  })
-}
 
 export function ProgressScreen() {
   const dailyLogs = useLiveQuery(() => db.dailyLogs.orderBy('date').toArray(), []) ?? []

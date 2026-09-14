@@ -97,4 +97,18 @@ describe('WeekView', () => {
     )
     expect(await screen.findByRole('link', { name: 'Today' })).toHaveAttribute('href', '/')
   })
+
+  it('previews a future day\'s specific exercises without navigating away', async () => {
+    render(
+      <MemoryRouter>
+        <WeekView />
+      </MemoryRouter>
+    )
+    // 09-16 (Wed) is Day B — Upper Body, Arms & Back.
+    await userEvent.click(await screen.findByRole('button', { name: /preview upper body, arms & back/i }))
+
+    expect(await screen.findByRole('dialog', { name: /upper body, arms & back/i })).toBeInTheDocument()
+    expect(screen.getByText('Wall Push-Up')).toBeInTheDocument()
+    expect(screen.getByText(/max clean reps/)).toBeInTheDocument()
+  })
 })

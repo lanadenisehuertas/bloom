@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '../../components/Card'
 import { Pill } from '../../components/Pill'
+import { Button } from '../../components/Button'
+import { Modal } from '../../components/Modal'
 import { TONE_MUTED } from '../../components/tones'
 import {
   Anchor,
@@ -19,10 +21,11 @@ import { useCycle } from '../../hooks/useCycle'
 import { useWorkoutLog } from '../../hooks/useWorkoutLog'
 import { useMotivationState } from '../dashboard/useMotivationState'
 import { useWellbeingState } from '../../hooks/useWellbeingState'
-import { applyCyclePhaseModifier } from '../../domain/workoutProgram'
+import { applyCyclePhaseModifier, resolveExerciseId } from '../../domain/workoutProgram'
 import { buildWeekDays, startOfWeek, addWeeks, WeekDayInfo } from '../../domain/week'
 import { todayLocalDate } from '../../lib/localDate'
 import { CyclePhase } from '../../domain/cycle'
+import { getExercise } from '../../data/exercises'
 
 const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -75,6 +78,8 @@ export function WeekView() {
 
   const today = todayLocalDate()
   const [weekStart, setWeekStart] = useState(() => startOfWeek(today))
+  const [previewDay, setPreviewDay] = useState<WeekDayInfo | null>(null)
+  const pushupLevel = settings.pushupLevel ?? 'pushup-wall'
 
   const workoutLogsByDate = useMemo(() => {
     const map = new Map<string, 'full' | 'minimal' | 'skipped'>()
@@ -236,15 +241,91 @@ export function WeekView() {
             </Card>
           )
 
-          return day.isToday ? (
-            <Link key={day.date} to="/workout" aria-label={`${day.scheduledDay.title}, today's workout`}>
+          if (day.isToday) {
+            return (
+              <Link key={day.date} to="/workout" aria-label={`${day.scheduledDay.title}, today's workout`}>
+                {content}
+              </Link>
+            )
+          }
+
+          // Non-today days aren't clickable through to the live player (that only
+          // makes sense for today's actual session) — instead, let the user preview
+          // exactly what the day involves before it arrives.
+          return (
+            <button
+              key={day.date}
+              type="button"
+              onClick={() => setPreviewDay(day)}
+              aria-label={`Preview ${day.scheduledDay.title}, ${WEEKDAY_SHORT[day.dayOfWeek]} ${day.date.slice(5)}`}
+              className="block w-full text-left"
+            >
               {content}
-            </Link>
-          ) : (
-            <div key={day.date}>{content}</div>
+            </button>
           )
         })}
       </div>
+
+      <Modal
+        open={previewDay != null}
+        onClose={() => setPreviewDay(null)}
+        title={previewDay?.scheduledDay.title}
+      >
+        {previewDay && (
+          <div className="space-y-3">
+            <p className="text-label text-ink-500">
+              {WEEKDAY_SHORT[previewDay.dayOfWeek]} · {previewDay.date.slice(5)} ·{' '}
+              {previewDay.scheduledDay.durationMinutes === '-'
+                ? 'Recovery & reflection'
+                : `${previewDay.scheduledDay.durationMinutes} min`}
+            </p>
+
+            {previewDay.projectedPhase && (
+              <Pill className="bg-ink-900/10">{PHASE_LABEL[previewDay.projectedPhase]}</Pill>
+            )}
+
+            {previewDay.scheduledDay.exercises.length > 0 ? (
+              <ul className="space-y-2">
+                {previewDay.scheduledDay.exercises.map((progExercise, i) => {
+                  const resolvedId = resolveExerciseId(
+                    progExercise.exerciseId,
+                    pushupLevel,
+                    jointPainFlagged
+                  )
+                  const exercise = getExercise(resolvedId)
+                  return (
+                    <li key={i} className="rounded-chip border-2 border-cream-edge bg-white p-3">
+                      <p className="font-display font-bold leading-snug">{exercise.name}</p>
+                      <p className="numerals text-label text-ink-500">
+                        {progExercise.sets} × {progExercise.reps}
+                      </p>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p className="text-label text-ink-500">
+                A rest day — no session planned, just your weekly check-in.
+              </p>
+            )}
+
+            {previewDay.scheduledDay.cooldown.length > 0 && (
+              <div>
+                <p className="text-label font-bold text-ink-500">Cooldown</p>
+                <p className="text-label text-ink-500">
+                  {previewDay.scheduledDay.cooldown.join(' · ')}
+                </p>
+              </div>
+            )}
+
+            {previewDay.isToday && (
+              <Link to="/workout" onClick={() => setPreviewDay(null)}>
+                <Button className="w-full">Start today's session</Button>
+              </Link>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -48,6 +48,22 @@ export function applyCyclePhaseModifier(_day: WorkoutDay, phase: CyclePhase): Cy
   }
 }
 
+/**
+ * Resolves a program slot's exercise id to the actual exercise to show/log.
+ * 'pushup-current-level' is a virtual marker resolved to whichever progression
+ * step the user is currently on; 'cardio-circuit' swaps to its low-impact
+ * variant when a recent joint-pain check-in flagged it.
+ */
+export function resolveExerciseId(
+  rawId: string,
+  pushupLevel: string,
+  jointPainFlagged: boolean
+): string {
+  if (rawId === 'pushup-current-level') return pushupLevel
+  if (rawId === 'cardio-circuit' && jointPainFlagged) return 'cardio-circuit-low-impact'
+  return rawId
+}
+
 export interface SessionResult {
   hitTopOfRange: boolean
 }

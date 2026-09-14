@@ -11,26 +11,18 @@ import { buildFormVideoLinks } from '../../domain/formVideos'
 import { useCycle } from '../../hooks/useCycle'
 import { useSettings } from '../../hooks/useSettings'
 import { useWellbeingState } from '../../hooks/useWellbeingState'
-import { applyCyclePhaseModifier, suggestProgressiveOverload, SessionResult } from '../../domain/workoutProgram'
+import {
+  applyCyclePhaseModifier,
+  suggestProgressiveOverload,
+  resolveExerciseId,
+  SessionResult,
+} from '../../domain/workoutProgram'
 import { db } from '../../db'
 import { WorkoutLogExercise } from '../../db/schema'
 
 /** Exercises that bear weight on one leg — offer a support note when joint pain
  *  was flagged this week, rather than only swapping the cardio finisher. */
 const SINGLE_LEG_EXERCISE_IDS = new Set(['single-leg-glute-bridge', 'step-up', 'donkey-kicks'])
-
-/**
- * 'pushup-current-level' is a virtual program slot (not a real exercise) — this
- * resolves it to whichever push-up progression step the user is actually on,
- * and resolves the cardio finisher to its low-impact variant when this week's
- * Weekly Check-in flagged joint pain. Both are "the check-in should matter"
- * fixes: real answers changing what's actually shown, not just stored.
- */
-function resolveExerciseId(rawId: string, pushupLevel: string, jointPainFlagged: boolean): string {
-  if (rawId === 'pushup-current-level') return pushupLevel
-  if (rawId === 'cardio-circuit' && jointPainFlagged) return 'cardio-circuit-low-impact'
-  return rawId
-}
 
 /**
  * Step-badge accents cycle through the palette. Colouring the whole card by muscle
